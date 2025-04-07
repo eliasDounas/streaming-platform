@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/login-form"
+import { ThemeSwitch } from "@/components/ThemeSwitch"
 
 export default function LoginPage() {
   return (
@@ -6,6 +7,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
         <LoginForm />
       </div>
+      <ThemeSwitch />
     </div>
   )
 }
