@@ -1,6 +1,6 @@
 "use client"
 
-import { LiveChannelItem } from "../LiveChannelItem"
+import { LiveChannelItem } from "./LiveChannelItem"
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar"
 
 const mockChannels = [
@@ -32,7 +32,7 @@ const mockChannels = [
 
 export function LiveChannelsList() {
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup>
       <SidebarGroupLabel>Live Channels</SidebarGroupLabel>
       <SidebarMenu>
         {mockChannels.map((channel) => (
