@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-switch/theme-provider"
+import { ThemeProvider } from "@/components/theme-switch/theme-provider";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
+import { LoginsDialog } from "@/components/auth-ui/logins-dialog";
+import { SignupDialog } from "@/components/auth-ui/signup-dialog";
+import { ThemeSwitch } from "@/components/theme-switch/ThemeSwitch";
+import SearchBar from "@/components/SearchBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +56,42 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-background">
+                <div className="flex items-center gap-2 px-4">
+                  <SidebarTrigger className="-ml-1" />
+                  {/* <Separator
+                    orientation="vertical"
+                    className="hidden md:block mr-2 data-[orientation=vertical]:h-4"
+                  />
+                  <Breadcrumb className="hidden md:block">
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink href="#">
+                          Building Your Application
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb> */}
+                </div>
+                <div className="relative w-full max-w-xs 2xl:max-w-md inline-block md:mx-auto">
+                  <SearchBar />
+                </div>
+                <div className="flex gap-2 md:gap-4 mx-2 md:mx-4">
+                  <LoginsDialog />
+                  <SignupDialog />
+                  <ThemeSwitch />
+                </div>
+              </header>
+              {children}
+            </SidebarInset>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>
