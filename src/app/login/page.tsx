@@ -1,13 +1,16 @@
-import { LoginForm } from "@/components/login-form"
-import { ThemeSwitch } from "@/components/ThemeSwitch"
+import { LoginsDialog } from "@/components/auth-ui/logins-dialog"
+import { SignupDialog } from "@/components/auth-ui/signup-dialog"
+import { ThemeSwitch } from "@/components/theme-switch/ThemeSwitch"
 
 export default function LoginPage() {
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
-        <LoginForm />
+    <div className="flex min-h-svh w-full flex-col items-center justify-center gap-4 p-6 md:p-10">
+      <div className="flex gap-4">
+        <LoginsDialog />
+        <SignupDialog />
+        <ThemeSwitch />
       </div>
-      <ThemeSwitch />
+      <p className="text-sm text-muted-foreground">Click on either button to open the respective dialog</p>
     </div>
   )
 }
