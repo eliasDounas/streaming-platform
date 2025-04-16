@@ -18,7 +18,7 @@ const LiveCard = () => {
           LIVE
         </div>
         {/* Viewer count */}
-        <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded-md flex items-center gap-1">
+        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded-md flex items-center gap-1">
           <Eye className="w-3 h-3" />
           <span>1.2K</span>
         </div>
