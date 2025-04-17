@@ -48,10 +48,10 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col h-[500px] bg-white dark:bg-black border-l m-2 rounded-2xl max-w-xs xl:max-w-sm p-2">
+    <div className="flex flex-col h-full bg-white dark:bg-black p-1">
       <div
         ref={containerRef}
-        className="flex-1 p-2 overflow-y-scroll overflow-x-hidden space-y-2"
+        className="flex-1 p-2 overflow-y-scroll overflow-x-hidden space-y-2 overflow-auto" 
       >
         {messages.map((msg, i) => {
             const color = getUserColor(msg.user);
