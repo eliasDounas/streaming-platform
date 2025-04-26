@@ -100,13 +100,7 @@ export function SignupForm({ className, ...props }: React.ComponentPropsWithoutR
             </Button>
           </div>
         </div>
-        <div className="mt-4 text-center text-sm">
-          Already have an account?{" "}
-          <a href="#" className="underline underline-offset-4">
-            Login
-          </a>
-        </div>
-      </form>
+     </form>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary mt-2">By clicking continue, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
        </div>
     </div>

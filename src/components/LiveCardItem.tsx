@@ -5,7 +5,7 @@ import Globe from "../../public/KUTtrV3.png"; // Replace with your own thumbnail
 
 const LiveCard = () => {
   return (
-    <div className="w-full max-w-[400px] rounded-xl overflow-hidden dark:bg-black/80 shadow hover:shadow-lg transition-shadow duration-300">
+    <div className="w-full max-w-[400px] rounded overflow-hidden dark:bg-black/80 shadow hover:shadow-lg transition-shadow duration-300">
       {/* Thumbnail */}
       <div className="relative w-full h-[140px] overflow-hidden">
         <Image
@@ -14,7 +14,7 @@ const LiveCard = () => {
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
         />
         {/* Live badge */}
-        <div className="absolute top-2 left-2 bg-red-600 text-white text-sm font-bold px-2 py-0.5 rounded-xs">
+        <div className="absolute top-2 left-2 bg-red-600 text-white text-sm font-bold px-2 py-0.5 rounded">
           LIVE
         </div>
         {/* Viewer count */}
