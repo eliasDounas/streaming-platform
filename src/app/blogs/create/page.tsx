@@ -23,17 +23,8 @@ export default function Page() {
       </div>
 
       {/* Create Blog Area */}
-      <div className="flex-grow bg-neutral-50 dark:bg-neutral-900/70 shadow-md rounded lg:p-8">
         <CreateBlog />
     
-        {/* Publish Button */}
-        <div className="mt-6 text-right">
-          <Button className="w-full sm:w-auto mr-3">
-            Publish
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
-
