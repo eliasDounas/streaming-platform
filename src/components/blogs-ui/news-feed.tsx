@@ -57,7 +57,8 @@ export function NewsFeed() {
           createdAt={blog.createdAt}
           readingTime={blog.readingTime}
           coverUrl={blog.coverUrl}
-        />
+          category='news'
+          />
       ))}
     </div>
   );

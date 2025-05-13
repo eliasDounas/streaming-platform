@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-switch/theme-provider";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
+import { ClientApolloProvider } from "./ApolloProvider"; 'ClientApolloProvider'
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import {
   Breadcrumb,
@@ -45,6 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ClientApolloProvider>
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -95,5 +96,6 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
+</ClientApolloProvider>
   );
 }

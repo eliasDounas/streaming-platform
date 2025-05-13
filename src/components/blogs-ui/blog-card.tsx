@@ -9,6 +9,7 @@ interface BlogCardProps {
   createdAt: string;
   readingTime: string;
   coverUrl: string;
+  category: string;
 }
 
 export function BlogCard({
@@ -19,9 +20,10 @@ export function BlogCard({
   createdAt,
   readingTime,
   coverUrl,
+  category
 }: BlogCardProps) {
   return (
-    <Link href={`/blogs/${id}`} className="flex hover:shadow-lg dark:hover:bg-popover overflow-hidden transition w-full min-h-52">
+    <Link href={`/blogs/${category}/${id}`} className="flex hover:shadow-lg dark:hover:bg-popover overflow-hidden transition w-full min-h-52">
       {/* Left side: Text */}
       <div className="flex flex-col justify-between lg:w-3/4 p-4">
         <div>
