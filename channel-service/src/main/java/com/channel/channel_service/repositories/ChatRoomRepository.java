@@ -8,4 +8,5 @@ import com.channel.channel_service.entities.ChatRoom;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Optional<ChatRoom> findByChannel_ChannelId(String channelId);
+    Optional<ChatRoom> findByArn(String arn);
 }
