@@ -25,9 +25,9 @@ export default function Page() {
           writer={blog.writer}
           createdAt={blog.createdAt}
           readingTime={blog.readingTime}
-          coverUrl={blog.coverUrl}
+          coverUrl={blog.coverImg}
           category='news'/>
-          
+
         <MarkdownViewer />
         </>
     );
