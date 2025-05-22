@@ -1,5 +1,6 @@
 package com.channel.channel_service.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import software.amazon.awssdk.services.ivs.IvsClient;
@@ -19,9 +20,13 @@ import software.amazon.awssdk.services.ivschat.model.DeleteRoomRequest;
 
 @Service
 public class AwsIvsService {
+    
+    @Value("${aws.ivs.recording-config-arn}")
+    private String recordingConfigArn;
+
     private final IvsClient ivsClient;
     private final IvschatClient chatClient;
-
+    
     public AwsIvsService(IvsClient ivsClient, IvschatClient chatClient) {
         this.ivsClient = ivsClient;
         this.chatClient = chatClient;
@@ -32,7 +37,8 @@ public class AwsIvsService {
             .name(name)
             .latencyMode(ChannelLatencyMode.LOW) 
             .type(ChannelType.STANDARD)          
-            .authorized(false)                
+            .authorized(false) 
+            .recordingConfigurationArn(recordingConfigArn)               
             .build();
         return ivsClient.createChannel(request);
     }
