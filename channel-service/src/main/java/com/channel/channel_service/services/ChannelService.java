@@ -32,8 +32,6 @@ public class ChannelService {
     @Transactional
     public Channel createChannel(Long userId, String name, String description, String avatarUrl) {
         
-        //make sure userId exists
-
         if (channelRepository.findByUserId(userId).isPresent()) {
             throw new UserAlreadyHasAChannelException("This User already has a channel.");
         }
@@ -84,7 +82,7 @@ public class ChannelService {
         );
     }
 
-    public ChatRoomDTO getChatRoomDtoByChannelId(String channelId) {
+    public ChatRoomDTO getChatRoomByChannelId(String channelId) {
         ChatRoom chatRoom = chatRoomRepository.findByChannel_ChannelId(channelId)
             .orElseThrow(() -> new ChatRoomNotFoundException("ChatRoom not found "));
 
@@ -146,6 +144,11 @@ public class ChannelService {
         }
 
         awsIvsService.deleteChannel(channel.getArn());
+        
+        if (channel.getChatRoom() != null) {
+            awsIvsService.deleteChatRoom(channel.getChatRoom().getArn());
+        }
+        
         channelRepository.delete(channel);
     }
 }

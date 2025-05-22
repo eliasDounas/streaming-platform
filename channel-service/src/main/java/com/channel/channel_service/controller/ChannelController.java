@@ -27,12 +27,12 @@ import com.channel.channel_service.services.ChannelService;
 @RestController
 @RequestMapping("/channels")
 public class ChannelController {
-    @Autowired private ChannelService service;
+    @Autowired private ChannelService channelService;
 
     @PostMapping    
     public ResponseEntity<ChannelCreateResponse> create(@RequestBody ChannelCreateRequest request) {
         
-        Channel channel = service.createChannel(request.getUserId(), request.getName(), request.getDescription(), request.getAvatarUrl());
+        Channel channel = channelService.createChannel(request.getUserId(), request.getName(), request.getDescription(), request.getAvatarUrl());
 
         ChannelCreateResponse response = new ChannelCreateResponse(channel.getChannelId(), "Channel created successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -40,29 +40,37 @@ public class ChannelController {
 
     @GetMapping("/{channelId}")
     public ResponseEntity<PublicChannelInfo> getPublic(@PathVariable String channelId) {
-        return ResponseEntity.ok(service.getPublicChannelInfo(channelId));
+        return ResponseEntity.ok(channelService.getPublicChannelInfo(channelId));
     }
 
     @GetMapping("/{channelId}/chatroom")
     public ResponseEntity<ChatRoomDTO> getChatRoom(@PathVariable String channelId) {
-        ChatRoomDTO dto = service.getChatRoomDtoByChannelId(channelId);
+        ChatRoomDTO dto = channelService.getChatRoomByChannelId(channelId);
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/{channelId}/chatroom/token")
+    public ResponseEntity<Map<String, String>> getChatToken(
+            @RequestParam String chatRoomArn, 
+            @RequestParam String userId) {
+        String token = channelService.generateChatTokenIfValid(chatRoomArn, userId);
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+
     @GetMapping("/streamer/{userId}")
-    public ResponseEntity<StreamConnectionInfo> getStreamConnectionInfo(@RequestParam Long userId) {
-        return ResponseEntity.ok(service.getPrivateStreamerConnectionInfo(userId));
+    public ResponseEntity<StreamConnectionInfo> getStreamConnectionInfo(@PathVariable Long userId) {
+        return ResponseEntity.ok(channelService.getPrivateStreamerConnectionInfo(userId));
     }
     
     @PutMapping("/{channelId}")
-    public ResponseEntity<Map<String, String>> update(@PathVariable Long userId, @PathVariable String channelId, @RequestBody ChannelUpdateRequest request) {
-        service.updateChannel(userId, channelId, request.getName(), request.getDescription(), request.getAvatarUrl());
+    public ResponseEntity<Map<String, String>> update(@PathVariable String channelId, @RequestBody ChannelUpdateRequest request) {
+        channelService.updateChannel(request.getUserId(), channelId, request.getName(), request.getDescription(), request.getAvatarUrl());
         return ResponseEntity.ok(Map.of("message", "Channel updated successfully."));
     }
 
     @DeleteMapping("/{channelId}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long userId, @PathVariable String channelId) {
-        service.deleteChannel(userId, channelId);
+    public ResponseEntity<Map<String, String>> delete(@RequestParam Long userId, @PathVariable String channelId) {
+        channelService.deleteChannel(userId, channelId);
         return ResponseEntity.ok(Map.of("message", "Channel deleted successfully."));
     }
 }

@@ -15,8 +15,6 @@ public class Channel {
     @Id
     private String channelId;
 
-    
-
     private String name;
     private String description;
     private boolean isLive;
@@ -35,6 +33,5 @@ public class Channel {
     @OneToOne(mappedBy = "channel", cascade = CascadeType.ALL)
     private ChatRoom chatRoom;
 
-    
 }
 
