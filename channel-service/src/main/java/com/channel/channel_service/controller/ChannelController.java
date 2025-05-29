@@ -1,5 +1,6 @@
 package com.channel.channel_service.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.channel.channel_service.DTO.ChannelCreateRequest;
 import com.channel.channel_service.DTO.ChannelCreateResponse;
+import com.channel.channel_service.DTO.ChannelPreviewDTO;
 import com.channel.channel_service.DTO.ChannelUpdateRequest;
 import com.channel.channel_service.DTO.ChatRoomDTO;
 import com.channel.channel_service.DTO.PublicChannelInfo;
@@ -57,13 +59,25 @@ public class ChannelController {
         return ResponseEntity.ok(Map.of("token", token));
     }
 
+    @GetMapping("/ids")
+    public ResponseEntity<List<String>> getAllChannelIds() {
+        List<String> channelIds = channelService.getAllChannelIds();
+        return ResponseEntity.ok(channelIds);
+    }
+    
+    @GetMapping("/live")
+    public ResponseEntity<List<ChannelPreviewDTO>> getLiveChannels() {
+        List<ChannelPreviewDTO> liveChannels = channelService.getLiveChannels();
+        return ResponseEntity.ok(liveChannels);
+    }
+    
     @GetMapping("/streamer/{userId}")
     public ResponseEntity<StreamConnectionInfo> getStreamConnectionInfo(@PathVariable Long userId) {
         return ResponseEntity.ok(channelService.getPrivateStreamerConnectionInfo(userId));
     }
     
     @PutMapping("/{channelId}")
-    public ResponseEntity<Map<String, String>> update(@PathVariable String channelId, @RequestBody ChannelUpdateRequest request) {
+    public ResponseEntity<Map<String, String>> updateChannel(@PathVariable String channelId, @RequestBody ChannelUpdateRequest request) {
         channelService.updateChannel(request.getUserId(), channelId, request.getName(), request.getDescription(), request.getAvatarUrl());
         return ResponseEntity.ok(Map.of("message", "Channel updated successfully."));
     }

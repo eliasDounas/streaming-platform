@@ -1,13 +1,16 @@
 package com.channel.channel_service.services;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.channel.channel_service.entities.Channel;
 import com.channel.channel_service.entities.ChatRoom;
+import com.channel.channel_service.DTO.ChannelPreviewDTO;
 import com.channel.channel_service.DTO.ChatRoomDTO;
 import com.channel.channel_service.DTO.PublicChannelInfo;
 import com.channel.channel_service.DTO.StreamConnectionInfo;
@@ -151,4 +154,36 @@ public class ChannelService {
         
         channelRepository.delete(channel);
     }
+
+    public List<ChannelPreviewDTO> getLiveChannels() {
+        // Use repository method that returns max 10 channels where isLive == true
+        List<Channel> channels = channelRepository.findTop10ByIsLiveTrue();
+    
+        // Convert entities to DTOs (assuming ChannelPreviewDTO has an appropriate constructor or builder)
+        return channels.stream()
+                .map(channel -> new ChannelPreviewDTO(
+                    channel.getChannelId(),
+                    channel.getName(),
+                    channel.getPlaybackUrl(),
+                    channel.getAvatarUrl()
+                ))
+                .collect(Collectors.toList());
+    }
+    
+    public List<String> getAllChannelIds() {
+        return channelRepository.findAllChannelIds();
+    }
+    
+    public List<ChannelPreviewDTO> getChannelPreviewsByIds(List<String> ids) {
+    return channelRepository.findAllById(ids)
+                            .stream()
+                            .map(channel -> new ChannelPreviewDTO(
+                                channel.getChannelId(),
+                                channel.getName(),
+                                channel.getPlaybackUrl(),
+                                channel.getAvatarUrl()
+                            ))
+                            .toList();
+    }
+
 }

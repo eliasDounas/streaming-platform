@@ -6,11 +6,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PublicChannelInfo {
+public class ChannelPreviewDTO {
     private String channelId;
     private String name;
-    private String description;
-    private boolean isLive;
     private String playbackUrl;
     private String avatarUrl; 
 }

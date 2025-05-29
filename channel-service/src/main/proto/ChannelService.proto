@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.example.grpc";
+option java_outer_classname = "ChannelServiceProto";
+
+service ChannelService {
+  rpc GetChannelPreviewsByIds (ChannelIdList) returns (ChannelPreviewList);
+}
+
+message ChannelIdList {
+  repeated string ids = 1;
+}
+
+message ChannelPreview {
+  string channelId = 1;
+  string name = 2;
+  string playbackUrl = 3;
+  string avatarUrl = 4;
+}
+
+message ChannelPreviewList {
+  repeated ChannelPreview previews = 1;
+}
