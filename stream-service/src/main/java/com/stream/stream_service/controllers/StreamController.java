@@ -1,80 +1,93 @@
 package com.stream.stream_service.controllers;
 
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import com.stream.stream_service.entities.Stream;
 import com.stream.stream_service.services.StreamService;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/streams")
-@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class StreamController {
-    
-    @Autowired
-    private StreamService streamService;
-    
-    @GetMapping
-    public List<Stream> getAllStreams() {
-        return streamService.getAllStreams();
+
+    private final StreamService streamService;
+
+    // 1. Create stream
+    @PostMapping("/create/{channelId}")
+    public ResponseEntity<Stream> createStream(@PathVariable String channelId) {
+        Stream stream = streamService.createStream(channelId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(stream);
     }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<Stream> getStreamById(@PathVariable Long id) {
-        return streamService.getStreamById(id)
+
+    // 2. Get all streams by channelId
+    @GetMapping("/channel/{channelId}")
+    public ResponseEntity<List<Stream>> getStreamsByChannelId(@PathVariable String channelId) {
+        return ResponseEntity.ok(streamService.getStreamsByChannelId(channelId));
+    }
+
+    // 3. Get the live stream by channelId
+    @GetMapping("/channel/{channelId}/live")
+    public ResponseEntity<Stream> getLiveStreamByChannelId(@PathVariable String channelId) {
+        return streamService.getLiveStreamByChannelId(channelId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    
-    @GetMapping("/channel/{channelId}")
-    public List<Stream> getStreamsByChannelId(@PathVariable String channelId) {
-        return streamService.getStreamsByChannelId(channelId);
-    }
-    
+
+    // 4. Get all live streams
     @GetMapping("/live")
-    public List<Stream> getLiveStreams() {
-        return streamService.getLiveStreams();
+    public ResponseEntity<List<Stream>> getLiveStreams() {
+        return ResponseEntity.ok(streamService.getLiveStreams());
     }
-    
-    @GetMapping("/live/channel/{channelId}")
-    public List<Stream> getLiveStreamsByChannelId(@PathVariable String channelId) {
-        return streamService.getLiveStreamsByChannelId(channelId);
+
+    // 5. Update live stream title/description
+    @PutMapping("/channel/{channelId}")
+    public ResponseEntity<Stream> updateStream(
+            @PathVariable String channelId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String description
+    ) {
+        return streamService.updateStream(channelId, title, description)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-    
-    @GetMapping("/popular")
-    public List<Stream> getPopularStreams() {
-        return streamService.getStreamsByViewCount();
+
+    // 6. Increment viewers
+    @PostMapping("/{id}/viewers/increment")
+    public ResponseEntity<Stream> incrementViewers(@PathVariable Long id) {
+        return streamService.incrementViewers(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-    
-    @PostMapping
-    public Stream createStream(@Valid @RequestBody Stream stream) {
-        return streamService.createStream(stream);
+
+    // 7. Decrement viewers
+    @PostMapping("/{id}/viewers/decrement")
+    public ResponseEntity<Stream> decrementViewers(@PathVariable Long id) {
+        return streamService.decrementViewers(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-    
-    @PutMapping("/{id}")
-    public ResponseEntity<Stream> updateStream(@PathVariable Long id, @Valid @RequestBody Stream streamDetails) {
-        try {
-            Stream updatedStream = streamService.updateStream(id, streamDetails);
-            return ResponseEntity.ok(updatedStream);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+
+    // 8. Get viewers count
+    @GetMapping("/{id}/viewers")
+    public ResponseEntity<Long> getViewersCount(@PathVariable Long id) {
+        return streamService.getViewersCount(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-    
-    @PutMapping("/{id}/end")
+
+    // 9. End a stream
+    @PostMapping("/{id}/end")
     public ResponseEntity<Stream> endStream(@PathVariable Long id) {
-        try {
-            Stream endedStream = streamService.endStream(id);
-            return ResponseEntity.ok(endedStream);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Stream stream = streamService.endStream(id);
+        return ResponseEntity.ok(stream);
     }
-    
+
+    // 10. Delete stream
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStream(@PathVariable Long id) {
         streamService.deleteStream(id);

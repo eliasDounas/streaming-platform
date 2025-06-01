@@ -8,12 +8,15 @@ import org.springframework.stereotype.Repository;
 import com.stream.stream_service.entities.Stream;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StreamRepository extends JpaRepository<Stream, Long> {
     
     List<Stream> findByChannelId(String channelId);
-    
+ 
+    Optional<Stream> findByChannelIdAndIsLiveTrue(String channelId);
+ 
     List<Stream> findByIsLive(Boolean isLive);
     
     @Query("SELECT s FROM Stream s WHERE s.channelId = :channelId AND s.isLive = true")

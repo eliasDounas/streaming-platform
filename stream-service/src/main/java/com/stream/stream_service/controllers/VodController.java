@@ -1,6 +1,7 @@
 package com.stream.stream_service.controllers;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,52 +12,60 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vods")
-@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class VodController {
-    
-    @Autowired
-    private VodService vodService;
-    
-    @GetMapping
-    public List<Vod> getAllVods() {
-        return vodService.getAllVods();
+
+    private final VodService vodService;
+
+    // 1. Create Vod from Stream ID
+    @PostMapping("/create/{streamId}")
+    public ResponseEntity<Vod> createVod(@PathVariable Long streamId) {
+        Vod vod = vodService.createVod(streamId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(vod);
     }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<Vod> getVodById(@PathVariable Long id) {
-        return vodService.getVodById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+
+    // 2. Update Vod (title and/or description)
+    @PutMapping("/{vodId}")
+    public ResponseEntity<Vod> updateVod(
+            @PathVariable Long vodId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String description
+    ) {
+        Vod updatedVod = vodService.updateVod(vodId, title, description);
+        return ResponseEntity.ok(updatedVod);
     }
-    
-    @GetMapping("/channel/{channelId}")
-    public List<Vod> getVodsByChannelId(@PathVariable String channelId) {
-        return vodService.getVodsByChannelId(channelId);
+
+    // 3. Increment views
+    @PostMapping("/{vodId}/views")
+    public ResponseEntity<Vod> incrementViews(@PathVariable Long vodId) {
+        Vod updatedVod = vodService.incrementViews(vodId);
+        return ResponseEntity.ok(updatedVod);
     }
-    
-    @GetMapping("/stream/{streamId}")
-    public List<Vod> getVodsByStreamId(@PathVariable Long streamId) {
-        return vodService.getVodsByStreamId(streamId);
-    }
-    
-    @PostMapping
-    public Vod createVod(@Valid @RequestBody Vod vod) {
-        return vodService.createVod(vod);
-    }
-    
-    @PutMapping("/{id}")
-    public ResponseEntity<Vod> updateVod(@PathVariable Long id, @Valid @RequestBody Vod vodDetails) {
-        try {
-            Vod updatedVod = vodService.updateVod(id, vodDetails);
-            return ResponseEntity.ok(updatedVod);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-    
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVod(@PathVariable Long id) {
-        vodService.deleteVod(id);
+
+    // 4. Delete Vod
+    @DeleteMapping("/{vodId}")
+    public ResponseEntity<Void> deleteVod(
+            @PathVariable Long vodId,
+            @RequestParam String userId // e.g. from security context or passed directly
+    ) {
+        vodService.deleteVod(vodId, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    // 5a. Get all VODs, optionally limited
+    @GetMapping
+    public ResponseEntity<List<Vod>> getVods(@RequestParam(required = false) Integer max) {
+        List<Vod> vods = vodService.getVods(max);
+        return ResponseEntity.ok(vods);
+    }
+
+    // 5b. Get VODs by channel ID, optionally limited
+    @GetMapping("/channel/{channelId}")
+    public ResponseEntity<List<Vod>> getVodsByChannelId(
+            @PathVariable String channelId,
+            @RequestParam(required = false) Integer max
+    ) {
+        List<Vod> vods = vodService.getVodsByChannelId(channelId, max);
+        return ResponseEntity.ok(vods);
     }
 }
