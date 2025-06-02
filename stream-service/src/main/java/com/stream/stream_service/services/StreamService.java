@@ -5,16 +5,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.stream.stream_service.DTO.ChannelDto;
+import com.stream.stream_service.DTO.StreamWithChannelDto;
 import com.stream.stream_service.entities.DefaultStreamInfo;
 import com.stream.stream_service.entities.Stream;
 import com.stream.stream_service.exceptions.ApiException;
+import com.stream.stream_service.gRPC.ChannelGrpcClient;
 import com.stream.stream_service.repositories.StreamRepository;
 
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class StreamService {
@@ -25,9 +31,11 @@ public class StreamService {
     @Autowired
     private DefaultStreamInfoService defaultStreamInfoService;
     
+    @Autowired
+    private ChannelGrpcClient channelGrpcClient;
 
     @Transactional
-    public Stream createStream(long userId) {
+    public Stream createStream(Long userId) {
         Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getByChannelId(userId);
 
         String title = defaultInfo.map(DefaultStreamInfo::getTitle).orElse("Untitled-Stream");
@@ -47,20 +55,37 @@ public class StreamService {
 
         return streamRepository.save(stream);
     }
-    
-    public List<Stream> getStreamsByChannelId(String channelId) {
-        
-        return streamRepository.findByChannelId(channelId);
-    }
 
-    public Optional<Stream> getLiveStreamByChannelId(String channelId) {
-        
-        return streamRepository.findByChannelIdAndIsLiveTrue(channelId);
+    public Optional<StreamWithChannelDto> getLiveStreamByChannelId(String channelId) {
+        return streamRepository.findByChannelIdAndIsLiveTrue(channelId)
+                .map(stream -> {
+                    List<ChannelDto> channels = channelGrpcClient.getChannelPreviewsByIds(List.of(channelId));
+                    ChannelDto channel = channels.isEmpty() ? null : channels.get(0);
+                    return new StreamWithChannelDto(stream, channel);
+                });
     }
     
-    public List<Stream> getLiveStreams() {
-        return streamRepository.findByIsLive(true);
+    
+    public List<StreamWithChannelDto> getLiveStreams() {
+        List<Stream> streams = streamRepository.findByIsLive(true);
+        List<String> channelIds = streams.stream()
+                .map(Stream::getChannelId)
+                .toList();
+    
+        List<ChannelDto> channelDtos = channelGrpcClient.getChannelPreviewsByIds(channelIds);
+    
+        // Map by channelId for easy lookup
+        Map<String, ChannelDto> channelMap = channelDtos.stream()
+                .collect(Collectors.toMap(ChannelDto::getChannelId, Function.identity()));
+    
+        return streams.stream()
+                .map(stream -> new StreamWithChannelDto(
+                        stream,
+                        channelMap.get(stream.getChannelId()) // may be null if channel not found
+                ))
+                .toList();
     }
+    
     
     @Transactional
     public Optional<Stream> updateStream(String channelId, String title, String description) {

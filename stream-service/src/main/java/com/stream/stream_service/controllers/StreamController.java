@@ -1,5 +1,6 @@
 package com.stream.stream_service.controllers;
 
+import com.stream.stream_service.DTO.StreamWithChannelDto;
 import com.stream.stream_service.entities.Stream;
 import com.stream.stream_service.services.StreamService;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +25,9 @@ public class StreamController {
         return ResponseEntity.status(HttpStatus.CREATED).body(stream);
     }
 
-    // 2. Get all streams by channelId
-    @GetMapping("/channel/{channelId}")
-    public ResponseEntity<List<Stream>> getStreamsByChannelId(@PathVariable String channelId) {
-        return ResponseEntity.ok(streamService.getStreamsByChannelId(channelId));
-    }
-
     // 3. Get the live stream by channelId
-    @GetMapping("/channel/{channelId}/live")
-    public ResponseEntity<Stream> getLiveStreamByChannelId(@PathVariable String channelId) {
+    @GetMapping("live/channel/{channelId}/")
+    public ResponseEntity<StreamWithChannelDto> getLiveStreamByChannelId(@PathVariable String channelId) {
         return streamService.getLiveStreamByChannelId(channelId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -40,7 +35,7 @@ public class StreamController {
 
     // 4. Get all live streams
     @GetMapping("/live")
-    public ResponseEntity<List<Stream>> getLiveStreams() {
+    public ResponseEntity<List<StreamWithChannelDto>> getLiveStreams() {
         return ResponseEntity.ok(streamService.getLiveStreams());
     }
 
