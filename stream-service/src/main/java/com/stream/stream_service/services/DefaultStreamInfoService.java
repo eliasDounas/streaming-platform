@@ -6,6 +6,7 @@ import com.stream.stream_service.exceptions.ApiException;
 import com.stream.stream_service.gRPC.ChannelGrpcClient;
 import com.stream.stream_service.repositories.DefaultStreamInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -18,15 +19,18 @@ public class DefaultStreamInfoService {
     private DefaultStreamInfoRepository defaultStreamInfoRepository;
 
     @Autowired
+    @Lazy
     private StreamService streamService;
 
     @Autowired
     private ChannelGrpcClient channelGrpcClient;
     
     
+    public Optional<DefaultStreamInfo> findByChannelId(String channelId) {
+        return defaultStreamInfoRepository.findByChannelId(channelId);
+    }
     
-    
-    public Optional<DefaultStreamInfo> getByChannelId(long userId) {
+    public Optional<DefaultStreamInfo> getChannelWithUserId(long userId) {
         // Step 1: Get the channel from gRPC
         ChannelDto channel;     
         try {

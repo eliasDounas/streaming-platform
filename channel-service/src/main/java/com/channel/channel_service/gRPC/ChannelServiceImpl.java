@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.channel.channel_service.DTO.ChannelPreviewDTO;
 import com.channel.channel_service.entities.Channel;
 import com.channel.channel_service.services.ChannelService;
+import com.example.grpc.ArnRequest;
 import com.example.grpc.ChannelIdList;
 import com.example.grpc.ChannelPreviewList;
 import com.example.grpc.ChannelResponse;
@@ -72,5 +73,31 @@ public class ChannelServiceImpl extends ChannelServiceGrpc.ChannelServiceImplBas
             );
         }
     }
+
+    @Override
+    public void getChannelByArn(ArnRequest request, StreamObserver<ChannelResponse> responseObserver) {
+        String arn = request.getArn();
+    
+        Optional<Channel> optionalChannel = channelService.getChannelByArn(arn); // assumes this method exists
+    
+        if (optionalChannel.isPresent()) {
+            Channel channel = optionalChannel.get();
+            ChannelResponse response = ChannelResponse.newBuilder()
+                    .setChannelId(channel.getChannelId())
+                    .setName(channel.getName())
+                    .setPlaybackUrl(channel.getPlaybackUrl())
+                    .setAvatarUrl(channel.getAvatarUrl())
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } else {
+            responseObserver.onError(
+                Status.NOT_FOUND
+                    .withDescription("Channel with given ARN not found.")
+                    .asRuntimeException()
+            );
+        }
+    }
+    
 
 }

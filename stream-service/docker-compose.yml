@@ -1,16 +1,16 @@
 services:
-  channel-service-postgres:
+  stream-service-postgres:
     image: postgres:16-alpine
-    container_name: pg-channel-service
+    container_name: pg-stream-service
     ports:
-      - "5433:5432" 
+      - "5434:5432"
     environment:
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: testpass
-      POSTGRES_DB: channel_db
+      POSTGRES_DB: stream_db
     volumes:
-      - pgdata1:/var/lib/postgresql/data
+      - pgdata2:/var/lib/postgresql/data
     restart: unless-stopped
 
 volumes:
-  pgdata1:
+  pgdata2:

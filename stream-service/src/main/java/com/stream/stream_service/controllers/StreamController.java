@@ -5,7 +5,6 @@ import com.stream.stream_service.entities.Stream;
 import com.stream.stream_service.services.StreamService;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,13 +17,7 @@ public class StreamController {
 
     private final StreamService streamService;
 
-    // 1. Create stream
-    @PostMapping("/create")
-    public ResponseEntity<Stream> createStream(@PathVariable long userId) {
-        Stream stream = streamService.createStream(userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(stream);
-    }
-
+   
     // 3. Get the live stream by channelId
     @GetMapping("live/channel/{channelId}/")
     public ResponseEntity<StreamWithChannelDto> getLiveStreamByChannelId(@PathVariable String channelId) {
@@ -62,13 +55,6 @@ public class StreamController {
         return streamService.getViewersCount(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    // 9. End a stream
-    @PostMapping("/{id}/end")
-    public ResponseEntity<Stream> endStream(@PathVariable Long streamId, @PathVariable Long userId) {
-        Stream stream = streamService.endStream(streamId, userId);
-        return ResponseEntity.ok(stream);
     }
 
     // 10. Delete stream

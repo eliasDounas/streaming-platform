@@ -31,20 +31,24 @@ public class StreamService {
     @Autowired
     private DefaultStreamInfoService defaultStreamInfoService;
     
+
     @Autowired
     private ChannelGrpcClient channelGrpcClient;
 
     @Transactional
-    public Stream createStream(Long userId) {
-        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelByUserId(userId);
+    public Stream createStream(String arn) {
 
+        ChannelDto channel = channelGrpcClient.getChannelByArn(arn);
+        if (channel == null) {
+            throw new ApiException("Channel not found", HttpStatus.NOT_FOUND);
+        }
+        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.findByChannelId(channel.getChannelId());
+        
         String title = defaultInfo.map(DefaultStreamInfo::getTitle).orElse("Untitled-Stream");
         String description = defaultInfo.map(DefaultStreamInfo::getDescription).orElse("No description available");
-        String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
-                .orElseThrow(() -> new ApiException("This user doesn't have a channel", HttpStatus.NOT_FOUND));
 
         Stream stream = new Stream();
-        stream.setChannelId(channelId);
+        stream.setChannelId(channel.getChannelId());
         stream.setTitle(title);
         stream.setDescription(description);
         stream.setIsLive(true);
@@ -140,28 +144,28 @@ public class StreamService {
         }
     
     //Update this later to end stream after it receives AWS notification
-    public Stream endStream(Long userId, Long id) {
+    public Stream endStream(String arn) {
 
-        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelByUserId(userId);
-        String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
-                .orElseThrow(() -> new ApiException("This user doesn't have a channel", HttpStatus.NOT_FOUND));
-        // Check if the stream belongs to the channel
-        Stream stream = streamRepository.findById(id)
-                .orElseThrow(() -> new ApiException("Stream not found", HttpStatus.NOT_FOUND));
-        if (!stream.getChannelId().equals(channelId)) {
-            throw new ApiException("This stream does not belong to the channel", HttpStatus.FORBIDDEN);
+        // 1. Get channel info by ARN
+        ChannelDto channel = channelGrpcClient.getChannelByArn(arn);
+        if (channel == null || channel.getChannelId() == null) {
+            throw new ApiException("Channel not found", HttpStatus.NOT_FOUND);
         }
-        return streamRepository.findById(id)
-                .map(str -> {
-                    str.setIsLive(false);
-                    str.setEndedAt(LocalDateTime.now());
-                    return streamRepository.save(str);
-                }).orElseThrow(() -> new ApiException("Stream not found", HttpStatus.NOT_FOUND));
+
+        // 2. Get the live stream for this channel
+        Stream stream = streamRepository.findByChannelIdAndIsLiveTrue(channel.getChannelId())
+            .orElseThrow(() -> new ApiException("No live stream found for this channel", HttpStatus.NOT_FOUND));
+
+        // 3. Update stream state
+        stream.setIsLive(false);
+        stream.setEndedAt(LocalDateTime.now());
+
+        return streamRepository.save(stream);
     }
     
     public void deleteStream(Long id, Long userId) {
 
-        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelByUserId(userId);
+        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelWithUserId(userId);
         String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
                 .orElseThrow(() -> new ApiException("This user doesn't have a channel", HttpStatus.NOT_FOUND));
         // Check if the stream belongs to the channel

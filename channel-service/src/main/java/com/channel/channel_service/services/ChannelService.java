@@ -118,6 +118,10 @@ public class ChannelService {
             channel.getIngestEndpoint()
         );
     }
+    
+    public Optional<Channel> getChannelByArn(String arn) {
+        return channelRepository.findByArn(arn); // assuming such a method exists in the repo
+    }
 
 
     public Channel updateChannel(Long userId, String channelId, String name, String description, String avatarUrl) {

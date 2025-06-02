@@ -18,7 +18,7 @@ public class DefaultStreamInfoController {
 
     @GetMapping
     public ResponseEntity<DefaultStreamInfo> getByChannelId(@PathVariable long userId) {
-        return defaultStreamInfoService.getByChannelId(userId)
+        return defaultStreamInfoService.getChannelWithUserId(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

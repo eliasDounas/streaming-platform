@@ -7,6 +7,7 @@ import com.example.grpc.ChannelIdList;
 import com.example.grpc.ChannelPreview;
 import com.example.grpc.ChannelPreviewList;
 import com.example.grpc.ChannelResponse;
+import com.example.grpc.ArnRequest;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class ChannelGrpcClient {
     @GrpcClient("channelService")  
     private ChannelServiceGrpc.ChannelServiceBlockingStub stub;
 
-    public ChannelDto getChannelByUserId(long userId) {
+    public ChannelDto getChannelByUserId(Long userId) {
         UserIdRequest request = UserIdRequest.newBuilder()
                 .setUserId(userId)
                 .build();
@@ -39,6 +40,19 @@ public class ChannelGrpcClient {
                 .toList();
     }
 
+    public ChannelDto getChannelByArn(String arn) {
+        ArnRequest request = ArnRequest.newBuilder()
+                .setArn(arn)
+                .build();
+
+        ChannelResponse response = stub.getChannelByArn(request);
+        if (response == null || response.getChannelId().isEmpty()) {
+            throw new RuntimeException("Channel not found for ARN: " + arn);
+        }
+        
+        return mapToDto(response);
+    }
+    
     private ChannelDto mapToDto(ChannelResponse response) {
         return new ChannelDto(
                 response.getChannelId(),
