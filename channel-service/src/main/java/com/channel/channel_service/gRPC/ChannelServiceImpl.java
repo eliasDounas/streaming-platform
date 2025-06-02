@@ -1,16 +1,21 @@
 package com.channel.channel_service.gRPC;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.channel.channel_service.DTO.ChannelPreviewDTO;
+import com.channel.channel_service.entities.Channel;
 import com.channel.channel_service.services.ChannelService;
 import com.example.grpc.ChannelIdList;
 import com.example.grpc.ChannelPreviewList;
+import com.example.grpc.ChannelResponse;
 import com.example.grpc.ChannelPreview;
 import com.example.grpc.ChannelServiceGrpc;
+import com.example.grpc.UserIdRequest;
+import io.grpc.Status;
 
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -43,4 +48,29 @@ public class ChannelServiceImpl extends ChannelServiceGrpc.ChannelServiceImplBas
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
+
+    public void getChannelByUserId(UserIdRequest request, StreamObserver<ChannelResponse> responseObserver) {
+        Long userId = request.getUserId();
+
+        Optional<Channel> optionalChannel = channelService.getChannelByUserId(userId);
+
+        if (optionalChannel.isPresent()) {
+            Channel channel = optionalChannel.get();
+            ChannelResponse response = ChannelResponse.newBuilder()
+                    .setChannelId(channel.getChannelId())
+                    .setName(channel.getName())
+                    .setPlaybackUrl(channel.getPlaybackUrl())
+                    .setAvatarUrl(channel.getAvatarUrl())
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } else {
+            responseObserver.onError(
+                Status.NOT_FOUND
+                    .withDescription("This user does not have a channel.")
+                    .asRuntimeException()
+            );
+        }
+    }
+
 }

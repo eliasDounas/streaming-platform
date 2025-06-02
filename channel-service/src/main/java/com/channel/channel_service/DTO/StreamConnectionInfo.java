@@ -11,6 +11,4 @@ public class StreamConnectionInfo {
     private String channelId;
     private String streamKey;
     private String ingestEndpoint;
-
-    
 }

@@ -18,9 +18,9 @@ public class StreamController {
     private final StreamService streamService;
 
     // 1. Create stream
-    @PostMapping("/create/{channelId}")
-    public ResponseEntity<Stream> createStream(@PathVariable String channelId) {
-        Stream stream = streamService.createStream(channelId);
+    @PostMapping("/create")
+    public ResponseEntity<Stream> createStream(@PathVariable long userId) {
+        Stream stream = streamService.createStream(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(stream);
     }
 
@@ -44,17 +44,6 @@ public class StreamController {
         return ResponseEntity.ok(streamService.getLiveStreams());
     }
 
-    // 5. Update live stream title/description
-    @PutMapping("/channel/{channelId}")
-    public ResponseEntity<Stream> updateStream(
-            @PathVariable String channelId,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String description
-    ) {
-        return streamService.updateStream(channelId, title, description)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     // 6. Increment viewers
     @PostMapping("/{id}/viewers/increment")
@@ -82,15 +71,15 @@ public class StreamController {
 
     // 9. End a stream
     @PostMapping("/{id}/end")
-    public ResponseEntity<Stream> endStream(@PathVariable Long id) {
-        Stream stream = streamService.endStream(id);
+    public ResponseEntity<Stream> endStream(@PathVariable Long streamId, @PathVariable Long userId) {
+        Stream stream = streamService.endStream(streamId, userId);
         return ResponseEntity.ok(stream);
     }
 
     // 10. Delete stream
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStream(@PathVariable Long id) {
-        streamService.deleteStream(id);
+    public ResponseEntity<Void> deleteStream(@PathVariable Long streamId, @PathVariable Long userId) {
+        streamService.deleteStream(streamId, userId);
         return ResponseEntity.noContent().build();
     }
 }

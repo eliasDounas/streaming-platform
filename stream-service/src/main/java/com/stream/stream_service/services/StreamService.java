@@ -27,11 +27,13 @@ public class StreamService {
     
 
     @Transactional
-    public Stream createStream(String channelId) {
-        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getByChannelId(channelId);
+    public Stream createStream(long userId) {
+        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getByChannelId(userId);
 
         String title = defaultInfo.map(DefaultStreamInfo::getTitle).orElse("Untitled-Stream");
         String description = defaultInfo.map(DefaultStreamInfo::getDescription).orElse("No description available");
+        String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
+                .orElseThrow(() -> new ApiException("This user doesn't have a channel", HttpStatus.NOT_FOUND));
 
         Stream stream = new Stream();
         stream.setChannelId(channelId);
@@ -47,10 +49,12 @@ public class StreamService {
     }
     
     public List<Stream> getStreamsByChannelId(String channelId) {
+        
         return streamRepository.findByChannelId(channelId);
     }
 
     public Optional<Stream> getLiveStreamByChannelId(String channelId) {
+        
         return streamRepository.findByChannelIdAndIsLiveTrue(channelId);
     }
     
@@ -60,6 +64,8 @@ public class StreamService {
     
     @Transactional
     public Optional<Stream> updateStream(String channelId, String title, String description) {
+        
+        
         // Find live stream by channel ID
         Optional<Stream> optionalStream = streamRepository.findByChannelIdAndIsLiveTrue(channelId);
 
@@ -82,8 +88,8 @@ public class StreamService {
     }
     
     @Transactional
-    public Optional<Stream> incrementViewers(Long id) {
-        return streamRepository.findById(id)
+    public Optional<Stream> incrementViewers(Long streamId) {
+        return streamRepository.findById(streamId)
                 .map(stream -> {
                     stream.setViewers(stream.getViewers() + 1);
                     return streamRepository.save(stream);
@@ -91,8 +97,9 @@ public class StreamService {
     }
 
     @Transactional
-    public Optional<Stream> decrementViewers(Long id) {
-        return streamRepository.findById(id)
+    public Optional<Stream> decrementViewers(Long streamId) {
+
+        return streamRepository.findById(streamId)
                 .map(stream -> {
                     long currentViewers = stream.getViewers() != null ? stream.getViewers() : 0L;
                     if (currentViewers > 0) {
@@ -102,21 +109,44 @@ public class StreamService {
                 });
     }
 
-    public Optional<Long> getViewersCount(Long id) {
-        return streamRepository.findById(id)
+    public Optional<Long> getViewersCount(Long streamId) {
+        return streamRepository.findById(streamId)
                 .map(Stream::getViewers);
         }
-    public Stream endStream(Long id) {
-        return streamRepository.findById(id)
-                .map(stream -> {
-                    stream.setIsLive(false);
-                    stream.setEndedAt(LocalDateTime.now());
-                    return streamRepository.save(stream);
-                })
+    
+    //Update this later to end stream after it receives AWS notification
+    public Stream endStream(Long userId, Long id) {
+
+        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getByChannelId(userId);
+        String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
+                .orElseThrow(() -> new ApiException("This user doesn't have a channel", HttpStatus.NOT_FOUND));
+        // Check if the stream belongs to the channel
+        Stream stream = streamRepository.findById(id)
                 .orElseThrow(() -> new ApiException("Stream not found", HttpStatus.NOT_FOUND));
+        if (!stream.getChannelId().equals(channelId)) {
+            throw new ApiException("This stream does not belong to the channel", HttpStatus.FORBIDDEN);
+        }
+        return streamRepository.findById(id)
+                .map(str -> {
+                    str.setIsLive(false);
+                    str.setEndedAt(LocalDateTime.now());
+                    return streamRepository.save(str);
+                }).orElseThrow(() -> new ApiException("Stream not found", HttpStatus.NOT_FOUND));
     }
     
-    public void deleteStream(Long id) {
+    public void deleteStream(Long id, Long userId) {
+
+        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getByChannelId(userId);
+        String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
+                .orElseThrow(() -> new ApiException("This user doesn't have a channel", HttpStatus.NOT_FOUND));
+        // Check if the stream belongs to the channel
+        Stream stream = streamRepository.findById(id)
+                .orElseThrow(() -> new ApiException("Stream not found", HttpStatus.NOT_FOUND));
+        if (!stream.getChannelId().equals(channelId)) {
+            throw new ApiException("This stream does not belong to the channel", HttpStatus.FORBIDDEN);
+        }
+        
+        // Delete the stream
         streamRepository.deleteById(id);
     }
 

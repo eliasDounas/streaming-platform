@@ -2,6 +2,7 @@ package com.channel.channel_service.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -184,6 +185,10 @@ public class ChannelService {
                                 channel.getAvatarUrl()
                             ))
                             .toList();
+    }
+
+    public Optional<Channel> getChannelByUserId(Long userId) {
+        return channelRepository.findByUserId(userId);
     }
 
 }

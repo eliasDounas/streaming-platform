@@ -43,6 +43,12 @@ public class AwsIvsService {
         return ivsClient.createChannel(request);
     }
 
+    /**
+     * Create a stream key for a channel.
+     * 
+     * @param channelArn ARN of the channel
+     * @return Stream key response containing the stream key and its ARN
+     */
     public CreateStreamKeyResponse createStreamKey(String channelArn) {
         return ivsClient.createStreamKey(CreateStreamKeyRequest.builder()
             .channelArn(channelArn)
