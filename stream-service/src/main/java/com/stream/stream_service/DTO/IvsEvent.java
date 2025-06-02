@@ -1,4 +1,4 @@
-package com.channel.channel_service.DTO;
+package com.stream.stream_service.DTO;
 
 import java.util.List;
 

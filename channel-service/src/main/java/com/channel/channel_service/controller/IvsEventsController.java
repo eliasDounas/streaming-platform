@@ -1,5 +1,6 @@
 package com.channel.channel_service.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,19 +21,30 @@ public class IvsEventsController {
     @Autowired
     private ChannelRepository channelRepository;
 
-    @PostMapping("/ivs/events")
+    @PostMapping
     public ResponseEntity<Void> handleIvsEvent(@RequestBody IvsEvent event) {
-        String channelArn = event.getDetail().getChannelArn();
-        String streamState = event.getDetail().getStreamState();
+        String eventName = event.getDetail().getEvent_name();
+        
+        // Filter only "Stream Start" or "Stream End"
+        if (!"Stream Start".equalsIgnoreCase(eventName) && !"Stream End".equalsIgnoreCase(eventName)) {
+            return ResponseEntity.ok().build();
+        }
 
+        List<String> resources = event.getResources();
+        if (resources == null || resources.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String channelArn = resources.get(0); // The ARN is always the first item
+        System.out.println("Received event: " + eventName + " for channel ARN: " + channelArn);
         Optional<Channel> optionalChannel = channelRepository.findByArn(channelArn);
         if (optionalChannel.isPresent()) {
             Channel channel = optionalChannel.get();
-            channel.setLive("LIVE".equalsIgnoreCase(streamState));
+            boolean isLive = "Stream Start".equalsIgnoreCase(eventName);
+            channel.setLive(isLive);
             channelRepository.save(channel);
         }
-
+        
         return ResponseEntity.ok().build();
     }
-
 }

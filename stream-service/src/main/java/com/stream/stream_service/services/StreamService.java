@@ -36,7 +36,7 @@ public class StreamService {
 
     @Transactional
     public Stream createStream(Long userId) {
-        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getByChannelId(userId);
+        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelByUserId(userId);
 
         String title = defaultInfo.map(DefaultStreamInfo::getTitle).orElse("Untitled-Stream");
         String description = defaultInfo.map(DefaultStreamInfo::getDescription).orElse("No description available");
@@ -142,7 +142,7 @@ public class StreamService {
     //Update this later to end stream after it receives AWS notification
     public Stream endStream(Long userId, Long id) {
 
-        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getByChannelId(userId);
+        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelByUserId(userId);
         String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
                 .orElseThrow(() -> new ApiException("This user doesn't have a channel", HttpStatus.NOT_FOUND));
         // Check if the stream belongs to the channel
@@ -161,7 +161,7 @@ public class StreamService {
     
     public void deleteStream(Long id, Long userId) {
 
-        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getByChannelId(userId);
+        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelByUserId(userId);
         String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
                 .orElseThrow(() -> new ApiException("This user doesn't have a channel", HttpStatus.NOT_FOUND));
         // Check if the stream belongs to the channel
