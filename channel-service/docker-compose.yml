@@ -18,7 +18,8 @@ services:
       dockerfile: Dockerfile
     container_name: channel-app
     ports:
-      - "8080:8080"
+      - "8080:8080"    # HTTP Spring Boot
+      - "9090:9090"    # gRPC
     depends_on:
       - channel-service-postgres
     environment:
