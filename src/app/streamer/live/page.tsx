@@ -5,27 +5,27 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Chat from "@/components/chat-ui/Chat";
 import { PanelRightClose, PanelLeftOpen } from "lucide-react";
+import IvsPlayer from "@/components/IvsPlayer";
+import LiveStreamWithChannelInfo from "@/components/LiveStreamWithChannelInfo";
 
 export default function LiveLayout() {
   const [chatOpen, setChatOpen] = useState(true);
 
   return (
     <div
-      className={cn("flex flex-col lg:flex-row")}
+      className={cn("flex flex-col xl:flex-row")}
       style={{
         height: "calc(100vh - 56px)", // 56px = h-14 navbar
       }}
     >
       {/* Video Player Section */}
-      <div className="bg-black flex-1 w-full">
         <div className="w-full h-full flex items-center justify-center text-white text-xl">
-          Video Player
-        </div>
+          <LiveStreamWithChannelInfo playbackUrl="https://c05b5d63d051.eu-west-1.playback.live-video.net/api/video/v1/eu-west-1.971528320784.channel.iBXyV5kDgVdx.m3u8" />
       </div>
 
       {/* Chat Section */}
       {chatOpen && (
-        <div className="border-t lg:border-t-0 lg:border-l flex flex-col lg:max-w-[400px] 2xl:min-w-[450px] xl:max-w-[500px] xl:min-w-[350px] h-[55vh] lg:h-full">
+        <div className="border-t xl:border-t-0 xl:border-l flex flex-col 2xl:min-w-[450px] xl:max-w-[500px] xl:min-w-[350px] h-[55vh] lg:h-full">
           <div className="flex items-center justify-between p-2 border-b">
             <Button
               variant="ghost"
