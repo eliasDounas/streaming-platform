@@ -16,7 +16,7 @@ services:
     build:
       context: . 
       dockerfile: Dockerfile
-    container_name: channel-service
+    container_name: channel-app
     ports:
       - "8080:8080"
     depends_on:

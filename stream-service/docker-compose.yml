@@ -12,11 +12,11 @@ services:
       - pgdata2:/var/lib/postgresql/data
     restart: unless-stopped
   
-  channel-service:
+  stream-service:
     build:
       context: . 
       dockerfile: Dockerfile
-    container_name: stream-service
+    container_name: stream-app
     ports:
       - "8081:8081"
     depends_on:
