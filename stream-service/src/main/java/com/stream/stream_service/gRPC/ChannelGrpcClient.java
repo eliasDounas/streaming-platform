@@ -20,7 +20,7 @@ public class ChannelGrpcClient {
     @GrpcClient("channelService")  
     private ChannelServiceGrpc.ChannelServiceBlockingStub stub;
 
-    public ChannelDto getChannelByUserId(Long userId) {
+    public ChannelDto getChannelByUserId(String userId) {
         UserIdRequest request = UserIdRequest.newBuilder()
                 .setUserId(userId)
                 .build();

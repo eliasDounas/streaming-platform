@@ -163,7 +163,7 @@ public class StreamService {
         return streamRepository.save(stream);
     }
     
-    public void deleteStream(Long id, Long userId) {
+    public void deleteStream(Long id, String userId) {
 
         Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelWithUserId(userId);
         String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)

@@ -30,7 +30,7 @@ public class DefaultStreamInfoService {
         return defaultStreamInfoRepository.findByChannelId(channelId);
     }
     
-    public Optional<DefaultStreamInfo> getChannelWithUserId(long userId) {
+    public Optional<DefaultStreamInfo> getChannelWithUserId(String userId) {
         // Step 1: Get the channel from gRPC
         ChannelDto channel;     
         try {
@@ -45,7 +45,7 @@ public class DefaultStreamInfoService {
         return defaultStreamInfoRepository.findById(channelId);
     }
 
-    public DefaultStreamInfo upsert(long userId, String title, String description) {
+    public DefaultStreamInfo upsert(String userId, String title, String description) {
            // Step 1: Get the channel from gRPC
            ChannelDto channel;
            try {
@@ -81,7 +81,7 @@ public class DefaultStreamInfoService {
            return saved;
        }
        
-    public void delete(long userId) {
+    public void delete(String userId) {
         // Step 1: Get the channel from gRPC
            ChannelDto channel;
            try {

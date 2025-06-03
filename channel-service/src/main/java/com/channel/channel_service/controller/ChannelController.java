@@ -72,7 +72,7 @@ public class ChannelController {
     }
     
     @GetMapping("/streamer/{userId}")
-    public ResponseEntity<StreamConnectionInfo> getStreamConnectionInfo(@PathVariable Long userId) {
+    public ResponseEntity<StreamConnectionInfo> getStreamConnectionInfo(@PathVariable String userId) {
         return ResponseEntity.ok(channelService.getPrivateStreamerConnectionInfo(userId));
     }
     
@@ -83,7 +83,7 @@ public class ChannelController {
     }
 
     @DeleteMapping("/{channelId}")
-    public ResponseEntity<Map<String, String>> delete(@RequestParam Long userId, @PathVariable String channelId) {
+    public ResponseEntity<Map<String, String>> delete(@RequestParam String userId, @PathVariable String channelId) {
         channelService.deleteChannel(userId, channelId);
         return ResponseEntity.ok(Map.of("message", "Channel deleted successfully."));
     }

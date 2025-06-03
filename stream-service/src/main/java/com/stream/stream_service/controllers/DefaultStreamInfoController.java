@@ -17,14 +17,14 @@ public class DefaultStreamInfoController {
     
 
     @GetMapping
-    public ResponseEntity<DefaultStreamInfo> getByChannelId(@PathVariable long userId) {
+    public ResponseEntity<DefaultStreamInfo> getByChannelId(@PathVariable String userId) {
         return defaultStreamInfoService.getChannelWithUserId(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<DefaultStreamInfo> upsert(@PathVariable long userId, @RequestBody DefaultStreamInfoRequest request) {
+    public ResponseEntity<DefaultStreamInfo> upsert(@PathVariable String userId, @RequestBody DefaultStreamInfoRequest request) {
         DefaultStreamInfo savedInfo = defaultStreamInfoService.upsert(
             userId,
             request.getTitle(),
@@ -34,7 +34,7 @@ public class DefaultStreamInfoController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> delete(@PathVariable long userId ) {
+    public ResponseEntity<Void> delete(@PathVariable String userId ) {
         defaultStreamInfoService.delete(userId);
         return ResponseEntity.ok().build();
     }

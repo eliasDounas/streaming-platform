@@ -51,7 +51,7 @@ public class ChannelServiceImpl extends ChannelServiceGrpc.ChannelServiceImplBas
     }
 
     public void getChannelByUserId(UserIdRequest request, StreamObserver<ChannelResponse> responseObserver) {
-        Long userId = request.getUserId();
+        String userId = request.getUserId();
 
         Optional<Channel> optionalChannel = channelService.getChannelByUserId(userId);
 
@@ -98,6 +98,4 @@ public class ChannelServiceImpl extends ChannelServiceGrpc.ChannelServiceImplBas
             );
         }
     }
-    
-
 }

@@ -34,7 +34,7 @@ public class ChannelService {
     @Autowired private AwsIvsService awsIvsService;
 
     @Transactional
-    public Channel createChannel(Long userId, String name, String description, String avatarUrl) {
+    public Channel createChannel(String userId, String name, String description, String avatarUrl) {
         
         if (channelRepository.findByUserId(userId).isPresent()) {
             throw new UserAlreadyHasAChannelException("This User already has a channel.");
@@ -108,7 +108,7 @@ public class ChannelService {
         // If valid, generate token from awsIvsService
         return awsIvsService.createChatToken(chatRoomArn, userId);
     } 
-    public StreamConnectionInfo getPrivateStreamerConnectionInfo(Long userId) {
+    public StreamConnectionInfo getPrivateStreamerConnectionInfo(String userId) {
         Channel channel = channelRepository.findByUserId(userId)
             .orElseThrow(() -> new ChannelNotFoundException("Channel not found for user: " + userId));
 
@@ -124,7 +124,7 @@ public class ChannelService {
     }
 
 
-    public Channel updateChannel(Long userId, String channelId, String name, String description, String avatarUrl) {
+    public Channel updateChannel(String userId, String channelId, String name, String description, String avatarUrl) {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new ChannelNotFoundException("Channel not found"));
         
@@ -143,7 +143,7 @@ public class ChannelService {
         return channelRepository.save(channel);
     }
 
-    public void deleteChannel(Long userId, String channelId) {
+    public void deleteChannel(String userId, String channelId) {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new ChannelNotFoundException("Channel not found"));
         
@@ -191,7 +191,7 @@ public class ChannelService {
                             .toList();
     }
 
-    public Optional<Channel> getChannelByUserId(Long userId) {
+    public Optional<Channel> getChannelByUserId(String userId) {
         return channelRepository.findByUserId(userId);
     }
 

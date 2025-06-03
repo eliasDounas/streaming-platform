@@ -26,7 +26,7 @@ public class Channel {
     private String playbackUrl;
 
     private String avatarUrl;
-    private Long userId;
+    private String userId;
 
     private LocalDateTime createdAt;
 

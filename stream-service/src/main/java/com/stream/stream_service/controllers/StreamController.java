@@ -59,7 +59,7 @@ public class StreamController {
 
     // 10. Delete stream
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStream(@PathVariable Long streamId, @PathVariable Long userId) {
+    public ResponseEntity<Void> deleteStream(@PathVariable Long streamId, @PathVariable String userId) {
         streamService.deleteStream(streamId, userId);
         return ResponseEntity.noContent().build();
     }

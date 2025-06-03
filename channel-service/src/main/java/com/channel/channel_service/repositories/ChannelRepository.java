@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.channel.channel_service.entities.Channel;
 
 public interface ChannelRepository extends JpaRepository<Channel, String> {
-    Optional<Channel> findByUserId(Long userId);
+    Optional<Channel> findByUserId(String userId);
     Optional<Channel> findByArn(String channelArn);
     List<Channel> findTop10ByIsLiveTrue();
     @Query("SELECT c.channelId FROM Channel c")
