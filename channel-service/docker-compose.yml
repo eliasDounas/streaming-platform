@@ -12,5 +12,20 @@ services:
       - pgdata1:/var/lib/postgresql/data
     restart: unless-stopped
 
+  channel-service:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    container_name: channel-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - channel-service-postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://channel-service-postgres:5432/channel_db
+      SPRING_DATASOURCE_USERNAME: testuser
+      SPRING_DATASOURCE_PASSWORD: testpass
+    restart: unless-stopped
+
 volumes:
   pgdata1:
