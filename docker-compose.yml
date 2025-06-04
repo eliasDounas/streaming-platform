@@ -1,0 +1,81 @@
+services:
+  # Channel Service Database
+  channel-service-postgres:
+    image: postgres:16-alpine
+    container_name: pg-channel-service
+    ports:
+      - "5433:5432" 
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: channel_db
+    volumes:
+      - pgdata1:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - streaming-platform
+
+  # Stream Service Database  
+  stream-service-postgres:
+    image: postgres:16-alpine
+    container_name: pg-stream-service
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: stream_db
+    volumes:
+      - pgdata2:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - streaming-platform
+
+  # Channel Service
+  channel-service:
+    build:
+      context: ./channel-service
+      dockerfile: Dockerfile
+    container_name: channel-app
+    ports:
+      - "8080:8080"    # HTTP Spring Boot
+      - "9090:9090"    # gRPC
+    depends_on:
+      - channel-service-postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://channel-service-postgres:5432/channel_db
+      SPRING_DATASOURCE_USERNAME: testuser
+      SPRING_DATASOURCE_PASSWORD: testpass
+    restart: unless-stopped
+    networks:
+      - streaming-platform
+
+  # Stream Service
+  stream-service:
+    build:
+      context: ./stream-service 
+      dockerfile: Dockerfile
+    container_name: stream-app
+    ports:
+      - "8081:8081"
+    depends_on:
+      - stream-service-postgres
+      - channel-service  # Wait for channel service to be ready
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stream-service-postgres:5432/stream_db
+      SPRING_DATASOURCE_USERNAME: testuser
+      SPRING_DATASOURCE_PASSWORD: testpass
+      # gRPC client configuration - connect to channel-service container
+      GRPC_CLIENT_CHANNELSERVICE_ADDRESS: static://channel-service:9090
+      GRPC_CLIENT_CHANNELSERVICE_NEGOTIATION_TYPE: plaintext
+    restart: unless-stopped
+    networks:
+      - streaming-platform
+
+volumes:
+  pgdata1:
+  pgdata2:
+
+networks:
+  streaming-platform:
+    driver: bridge
