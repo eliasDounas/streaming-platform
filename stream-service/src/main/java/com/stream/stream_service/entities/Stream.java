@@ -47,6 +47,9 @@ public class Stream {
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
     
-
-
+    @Column(name = "category")
+    private String category;
+    
+    @Column(name = "vod_url")
+    private String vodUrl;
 }

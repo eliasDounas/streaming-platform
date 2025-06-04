@@ -1,6 +1,7 @@
 package com.stream.stream_service.controllers;
 
 import com.stream.stream_service.DTO.StreamWithChannelDto;
+import com.stream.stream_service.DTO.PaginatedStreamResponse;
 import com.stream.stream_service.entities.Stream;
 import com.stream.stream_service.services.StreamService;
 import lombok.RequiredArgsConstructor;
@@ -17,50 +18,60 @@ public class StreamController {
 
     private final StreamService streamService;
 
-   
-    // 3. Get the live stream by channelId
-    @GetMapping("live/channel/{channelId}/")
-    public ResponseEntity<StreamWithChannelDto> getLiveStreamByChannelId(@PathVariable String channelId) {
+    // Get live stream by channel ID
+    @GetMapping("/channels/{channelId}/live")
+    public ResponseEntity<StreamWithChannelDto> getLiveStream(@PathVariable String channelId) {
         return streamService.getLiveStreamByChannelId(channelId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. Get all live streams
+    // Get all live streams
     @GetMapping("/live")
-    public ResponseEntity<List<StreamWithChannelDto>> getLiveStreams() {
+    public ResponseEntity<List<StreamWithChannelDto>> getAllLiveStreams() {
         return ResponseEntity.ok(streamService.getLiveStreams());
     }
+    
 
-
-    // 6. Increment viewers
-    @PostMapping("/{id}/viewers/increment")
+    // Get finished streams with pagination metadata
+    @GetMapping("/channels/{channelId}/finished")
+    public ResponseEntity<PaginatedStreamResponse<Stream>> getFinishedStreamsWithMeta(
+            @PathVariable String channelId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PaginatedStreamResponse<Stream> response = streamService.getFinishedStreamsWithMetadata(channelId, page, size);
+        return ResponseEntity.ok(response);
+    }    
+    
+    // Get all finished streams sorted by views with channel info and pagination metadata
+    @GetMapping("/finished/popular")
+    public ResponseEntity<PaginatedStreamResponse<StreamWithChannelDto>> getPopularFinishedStreams(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PaginatedStreamResponse<StreamWithChannelDto> response = streamService.getFinishedStreamsWithChannelInfo(page, size);
+        return ResponseEntity.ok(response);
+    }
+    
+    // Increment stream viewers
+    @PostMapping("/{id}/viewers")
     public ResponseEntity<Stream> incrementViewers(@PathVariable Long id) {
         return streamService.incrementViewers(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 7. Decrement viewers
-    @PostMapping("/{id}/viewers/decrement")
-    public ResponseEntity<Stream> decrementViewers(@PathVariable Long id) {
-        return streamService.decrementViewers(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // 8. Get viewers count
+    // Get viewers count
     @GetMapping("/{id}/viewers")
     public ResponseEntity<Long> getViewersCount(@PathVariable Long id) {
         return streamService.getViewersCount(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    // 10. Delete stream
+    }    
+    
+    // Delete stream
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStream(@PathVariable Long streamId, @PathVariable String userId) {
-        streamService.deleteStream(streamId, userId);
+    public ResponseEntity<Void> deleteStream(@PathVariable Long id, @RequestParam String userId) {
+        streamService.deleteStream(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

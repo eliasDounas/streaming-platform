@@ -14,8 +14,6 @@ public class DefaultStreamInfoController {
     @Autowired
     private DefaultStreamInfoService defaultStreamInfoService;
 
-    
-
     @GetMapping
     public ResponseEntity<DefaultStreamInfo> getByChannelId(@PathVariable String userId) {
         return defaultStreamInfoService.getChannelWithUserId(userId)

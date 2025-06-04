@@ -11,7 +11,6 @@ services:
     volumes:
       - pgdata1:/var/lib/postgresql/data
     restart: unless-stopped
-
   channel-service:
     build:
       context: . 
@@ -27,6 +26,13 @@ services:
       SPRING_DATASOURCE_USERNAME: testuser
       SPRING_DATASOURCE_PASSWORD: testpass
     restart: unless-stopped
+    networks:
+      - streaming-platform
 
 volumes:
+  pgdata1:
+
+networks:
+  streaming-platform:
+    external: true
   pgdata1:
