@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-switch/theme-provider";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClientApolloProvider } from "./ApolloProvider"; 'ClientApolloProvider'
+import { ClientApolloProvider } from "./ApolloProvider";
+// Initialize Zustand auth store (no provider needed!)
+import '@/store';
+
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import {
   Breadcrumb,

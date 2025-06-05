@@ -20,7 +20,7 @@ export default function LiveLayout() {
     >
       {/* Video Player Section */}
         <div className="w-full h-full flex items-center justify-center text-white text-xl">
-          <LiveStreamWithChannelInfo playbackUrl="https://c05b5d63d051.eu-west-1.playback.live-video.net/api/video/v1/eu-west-1.971528320784.channel.iBXyV5kDgVdx.m3u8" />
+          <LiveStreamWithChannelInfo playbackUrl="https://ivs-streams-archives.s3.eu-west-1.amazonaws.com/ivs/v1/971528320784/5OIWeVEPKd7j/2025/6/4/22/12/FXoRUQs7YtAE/media/hls/master.m3u8" />
       </div>
 
       {/* Chat Section */}
