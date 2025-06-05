@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.stream.stream_service.enums.StreamCategory;
 
 @Entity
 @Table(name = "default_stream_info")
@@ -25,6 +26,11 @@ public class DefaultStreamInfo {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    @NotNull(message = "Category cannot be null")
+    private StreamCategory category = StreamCategory.OTHER;
 
 
 }

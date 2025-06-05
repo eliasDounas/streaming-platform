@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.stream.stream_service.enums.StreamCategory;
 
 
 
@@ -43,12 +44,13 @@ public class Stream {
     
     @Column(name = "started_at")
     private LocalDateTime startedAt;
-    
-    @Column(name = "ended_at")
+      @Column(name = "ended_at")
     private LocalDateTime endedAt;
     
-    @Column(name = "category")
-    private String category;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    @NotNull(message = "Category cannot be null")
+    private StreamCategory category = StreamCategory.OTHER;
     
     @Column(name = "vod_url")
     private String vodUrl;

@@ -3,6 +3,7 @@ package com.stream.stream_service.controllers;
 import com.stream.stream_service.DTO.DefaultStreamInfoRequest;
 import com.stream.stream_service.entities.DefaultStreamInfo;
 import com.stream.stream_service.services.DefaultStreamInfoService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +21,14 @@ public class DefaultStreamInfoController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    
     @PostMapping
     public ResponseEntity<DefaultStreamInfo> upsert(@PathVariable String userId, @RequestBody DefaultStreamInfoRequest request) {
         DefaultStreamInfo savedInfo = defaultStreamInfoService.upsert(
             userId,
             request.getTitle(),
-            request.getDescription()
+            request.getDescription(),
+            request.getCategory()
         );
         return ResponseEntity.ok(savedInfo);
     }

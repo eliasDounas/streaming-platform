@@ -12,6 +12,7 @@ import com.stream.stream_service.DTO.StreamWithChannelDto;
 import com.stream.stream_service.DTO.PaginatedStreamResponse;
 import com.stream.stream_service.entities.DefaultStreamInfo;
 import com.stream.stream_service.entities.Stream;
+import com.stream.stream_service.enums.StreamCategory;
 import com.stream.stream_service.exceptions.ApiException;
 import com.stream.stream_service.gRPC.ChannelGrpcClient;
 import com.stream.stream_service.repositories.StreamRepository;
@@ -43,10 +44,10 @@ public class StreamService {
         ChannelDto channel = channelGrpcClient.getChannelByArn(arn);
         if (channel == null) {
             throw new ApiException("Channel not found", HttpStatus.NOT_FOUND);
-        }
-        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.findByChannelId(channel.getChannelId());
-          String title = defaultInfo.map(DefaultStreamInfo::getTitle).orElse("Untitled-Stream");
+        }        Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.findByChannelId(channel.getChannelId());
+        String title = defaultInfo.map(DefaultStreamInfo::getTitle).orElse("Untitled-Stream");
         String description = defaultInfo.map(DefaultStreamInfo::getDescription).orElse("No description available");
+        StreamCategory category = defaultInfo.map(DefaultStreamInfo::getCategory).orElse(StreamCategory.OTHER);
 
         
 
@@ -54,6 +55,7 @@ public class StreamService {
         stream.setChannelId(channel.getChannelId());
         stream.setTitle(title);
         stream.setDescription(description);
+        stream.setCategory(category);
         stream.setIsLive(true);
         stream.setStartedAt(LocalDateTime.now());
         stream.setEndedAt(null);
