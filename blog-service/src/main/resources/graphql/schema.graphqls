@@ -1,0 +1,102 @@
+type ChannelPreview {
+    channelId: String!
+    name: String!
+    playbackUrl: String!
+    avatarUrl: String!
+}
+
+type Channel {
+    channelId: String!
+    name: String!
+    playbackUrl: String!
+    avatarUrl: String!
+}
+
+type NewsBlog {
+    id: ID!
+    description: String
+    category: String
+    channelId: String!
+    title: String!
+    hook: String
+    content: String!
+    tags: [String]
+    coverImg: String
+    readingTime: Int
+    createdAt: String
+}
+
+type GamingBlog {
+    id: ID!
+    description: String
+    category: String
+    channelId: String!
+    title: String!
+    hook: String
+    content: String!
+    tags: [String]
+    coverImg: String
+    readingTime: Int
+    createdAt: String
+}
+
+type NewsBlogOutput {
+    newsBlog: NewsBlog
+    channel: Channel
+}
+
+type GamingBlogOutput {
+    gamingBlog: GamingBlog
+    channel: Channel
+}
+
+type Query {
+    getNewsBlogs: [NewsBlogOutput]
+    getNewsById(id: ID!): NewsBlogOutput
+    getNewsBlogsByCategory(category: String!): [NewsBlogOutput]
+    getNewsBlogsByTag(tag: String!): [NewsBlogOutput]
+    getNewsBlogsByChannel(channelId: String!): [NewsBlogOutput]
+
+    getGamingBlogs: [GamingBlogOutput]
+    getGamingBlogById(id: ID!): GamingBlogOutput
+    getGamingBlogsByCategory(category: String!): [GamingBlogOutput]
+    getGamingBlogsByTag(tag: String!): [GamingBlogOutput]
+    getGamingBlogsByChannel(channelId: String!): [GamingBlogOutput]
+
+    getChannelPreviews(channelIds: [String!]!): [ChannelPreview!]!
+    getChannelByUserId(userId: Int!): Channel
+}
+
+type Mutation {
+    createNewsBlogs(news: NewsBlogInput!): NewsBlogOutput
+    updateNewsBlog(id: ID!, news: NewsBlogInput!): NewsBlogOutput
+    deleteNewsBlogById(id: ID!): String
+
+    createGamingBlogs(gaming: GamingBlogInput!): GamingBlogOutput
+    updateGamingBlog(id: ID!, gaming: GamingBlogInput!): GamingBlogOutput
+    deleteGamingBlogById(id: ID!): String
+}
+
+input NewsBlogInput {
+    description: String
+    category: String
+    userId: String
+    title: String 
+    hook: String
+    content: String
+    tags: [String]
+    coverImg: String
+    readingTime: Int
+}
+
+input GamingBlogInput {
+    description: String
+    category: String
+    userId: String
+    title: String
+    hook: String
+    content: String
+    tags: [String]
+    coverImg: String
+    readingTime: Int
+}
