@@ -40,6 +40,7 @@ export function AppHeader() {
         <SearchBar />
       </div>
       <div className="flex gap-2 md:gap-4 mx-2 md:mx-4">
+        {/* TO DO - if not auth, we render this block, otherwise we rended ChannelStatusButton */}
         <LoginsDialog />
         <SignupDialog />
         <ThemeSwitch />

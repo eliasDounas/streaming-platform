@@ -1,29 +1,21 @@
 import axios from 'axios';
 
-// Main API instance
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
-// Chat/WebSocket API instance
-const chatApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_CHAT_API_URL || 'http://localhost:3002/chat',
+// Channel API instance
+const channelApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_CHANNEL_API_URL || 'http://localhost:8080/channel-service',
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// CDN/Media API instance
-const mediaApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_MEDIA_API_URL || 'https://cdn.example.com',
-  timeout: 30000, // Longer timeout for media uploads
+// Stream API instance
+const streamApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_STREAM_API_URL || 'http://localhost:8081/stream-service',
+  timeout: 10000,
   headers: {
-    'Content-Type': 'multipart/form-data',
+    'Content-Type': 'application/json',
   },
 });
 
@@ -36,5 +28,4 @@ const analyticsApi = axios.create({
   },
 });
 
-export default api;
-export { chatApi, mediaApi, analyticsApi };
+export { channelApi,  streamApi, analyticsApi };

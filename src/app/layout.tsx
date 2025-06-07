@@ -58,7 +58,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SidebarProvider>
-            <AppSidebar />            <SidebarInset>
+            <AppSidebar />            
+            <SidebarInset>
               <AppHeader />
               {children}
             </SidebarInset>

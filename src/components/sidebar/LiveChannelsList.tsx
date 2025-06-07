@@ -1,49 +1,49 @@
 "use client"
 
+import React from 'react'
 import { LiveChannelItem } from "./LiveChannelItem"
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar"
-
-const mockChannels = [
-  {
-    username: "nasdas_off",
-    category: "Just Chatting",
-    viewers: "79.6K",
-    avatarUrl: "https://static-cdn.jtvnw.net/jtv_user_pictures/6b34e7ac-cdde-4fd3-9e1e-547f2b3d0e2a-profile_image-70x70.png",
-  },
-  {
-    username: "pokimane",
-    category: "League of Legends",
-    viewers: "52.3K",
-    avatarUrl: "https://static-cdn.jtvnw.net/jtv_user_pictures/pokimane-profile_image.png",
-  },
-  {
-    username: "xqc",
-    category: "Valorant",
-    viewers: "104K",
-    avatarUrl: "https://static-cdn.jtvnw.net/jtv_user_pictures/xqc-profile_image.png",
-  },
-  {
-    username: "kai_cenat",
-    category: "GTA V",
-    viewers: "91.1K",
-    avatarUrl: "https://static-cdn.jtvnw.net/jtv_user_pictures/kai_cenat-profile_image.png",
-  },
-]
+import { useLiveStreams } from "@/hooks/useSWR"
 
 export function LiveChannelsList() {
+  const { liveStreams, isLoading, error } = useLiveStreams()
+  // Extract channel data from live streams (assuming 1:1 relationship)
+  const channels = React.useMemo(() => {
+    return liveStreams
+      .filter(stream => stream.channelId && stream.channelName) // Filter out invalid streams
+      .map(stream => ({
+        channelId: stream.channelId,
+        channelName: stream.channelName,
+        avatarUrl: stream.avatarUrl,
+        viewers: stream.viewers || 0
+      }));
+  }, [liveStreams]);
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Live Channels</SidebarGroupLabel>
       <SidebarMenu>
-        {mockChannels.map((channel) => (
-          <LiveChannelItem
-            key={channel.username}
-            avatarUrl={channel.avatarUrl}
-            username={channel.username}
-            category={channel.category}
-            viewers={channel.viewers}
-          />
-        ))}
+        {isLoading ? (
+          <div className="px-3 py-2 text-sm text-muted-foreground">
+            Loading live channels...
+          </div>        ) : error ? (
+          <div className="px-3 py-2 text-sm text-red-500">
+            Failed to load channels
+          </div>
+        ) : channels.length === 0 ? (
+          <div className="px-3 py-2 text-sm text-muted-foreground">
+            No channels are live at the moment
+          </div>        ) : (
+          channels.map((channel, index) => (
+            <LiveChannelItem
+              key={`${channel.channelId}-${index}`}
+              channelId={channel.channelId}
+              channelName={channel.channelName}
+              avatarUrl={channel.avatarUrl}
+              viewers={channel.viewers}
+            />
+          ))
+        )}
       </SidebarMenu>
     </SidebarGroup>
   )

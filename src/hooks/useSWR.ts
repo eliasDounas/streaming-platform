@@ -1,70 +1,116 @@
+"use client"
+
+import React from 'react';
 // SWR configuration with Axios
 import useSWR from 'swr';
-import api from '@/lib/api';
-import { Stream, Channel } from '@/types/api';
+import { channelApi, streamApi } from '@/lib/api';
+import { Stream, Channel, ChannelPreviewDTO,  PaginatedResponse, StreamWithChannelDto } from '@/types/api';
 
-// Generic fetcher function for SWR
-const fetcher = (url: string) => api.get(url).then(res => res.data);
 
-// Custom hooks using SWR + Axios
-export function useStreams() {
-  const { data, error, isLoading, mutate } = useSWR<Stream[]>('/streams', fetcher, {
-    refreshInterval: 30000, // Refresh every 30 seconds for live data
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-  });
+// Channel API fetcher
+const channelFetcher = (url: string) => channelApi.get(url).then(res => res.data);
+
+// Stream API fetcher
+const streamFetcher = (url: string) => streamApi.get(url).then(res => res.data);
+
+
+// New hook for live streams using streamApi
+export function useLiveStreams() {
+  const { data, error, isLoading, mutate } = useSWR<{stream: any, channel: any}[]>(
+    '/public/livestreams',
+    streamFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
+  // Transform the nested data structure to flat LiveStreamDto format
+  const liveStreams = React.useMemo(() => {
+    if (!data) return [];
+    
+    return data.map(item => ({
+      streamId: item.stream.id.toString(),
+      channelId: item.stream.channelId,
+      title: item.stream.title,
+      description: item.stream.description,
+      category: item.stream.category,
+      viewers: item.stream.viewers,
+      isLive: item.stream.isLive,
+      thumbnailUrl: item.stream.thumbnailUrl,
+      channelName: item.channel.name,
+      avatarUrl: item.channel.avatarUrl,
+      playbackUrl: item.channel.playbackUrl,
+    }));
+  }, [data]);
 
   return {
-    streams: data || [],
+    liveStreams,
     isLoading,
     error,
     refresh: mutate
   };
 }
 
-export function useStream(streamId: string) {
-  const { data, error, isLoading, mutate } = useSWR<Stream>(
-    streamId ? `/streams/${streamId}` : null,
-    fetcher,
+// New hook for past streams using streamApi
+export function usePastStreams(page: number = 0, size: number = 10) {
+  const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<StreamWithChannelDto>>(
+    `/public/vods/popular?page=${page}&size=${size}`,
+    streamFetcher,
     {
-      refreshInterval: 10000, // Refresh every 10 seconds for live stream data
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
+  // Transform the data to match LiveStreamDto format for compatibility with LiveCardItem
+  const pastStreams = React.useMemo(() => {
+    if (!data?.content) return [];
+    
+    return data.content.map(item => ({
+      streamId: item.stream.id,
+      channelId: item.stream.channelId,
+      title: item.stream.title,
+      description: item.stream.description,
+      category: item.stream.category,
+      viewers: item.stream.viewers,
+      isLive: false, // Past streams are never live
+      thumbnailUrl: item.stream.thumbnailUrl,
+      channelName: item.channel.name,
+      avatarUrl: item.channel.avatarUrl,
+      playbackUrl: item.stream.vodUrl || '', // Use VOD URL for past streams
+    }));
+  }, [data]);
+  return {
+    pastStreams,
+    isLoading,
+    error,
+    refresh: mutate,
+    pagination: data ? {
+      page: data.page,
+      size: data.size,
+      totalElements: data.totalElements,
+      totalPages: data.totalPages,
+    } : null,
+  };
+}
+
+// New hook for user's channel status
+export function useUserChannel(userId: string) {
+  const { data, error, isLoading, mutate } = useSWR<ChannelPreviewDTO>(
+    userId ? `/user/${userId}` : null,
+    channelFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      shouldRetryOnError: false, // Don't retry on 404 (no channel)
     }
   );
 
   return {
-    stream: data,
+    userChannel: data,
     isLoading,
     error,
     refresh: mutate
   };
-}
-
-export function useChannel(channelId: string) {
-  const { data, error, isLoading, mutate } = useSWR<Channel>(
-    channelId ? `/channels/${channelId}` : null,
-    fetcher
-  );
-
-  return {
-    channel: data,
-    isLoading,
-    error,
-    refresh: mutate
-  };
-}
-
-
-// For mutations (POST, PUT, DELETE)
-export async function createStream(streamData: Partial<Stream>) {
-  const response = await api.post('/streams', streamData);
-  return response.data;
-}
-
-export async function updateStream(streamId: string, updates: Partial<Stream>) {
-  const response = await api.put(`/streams/${streamId}`, updates);
-  return response.data;
-}
-
-export async function deleteStream(streamId: string) {
-  await api.delete(`/streams/${streamId}`);
 }

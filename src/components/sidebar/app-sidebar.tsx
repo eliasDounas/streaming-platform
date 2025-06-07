@@ -19,7 +19,7 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
 }
-
+// if not authenticated, don't show NavUser
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>

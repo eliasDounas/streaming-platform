@@ -1,35 +1,51 @@
+import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dot } from "lucide-react"
 
 type LiveChannelItemProps = {
-  avatarUrl: string
-  username: string
-  category: string
-  viewers: string // formatted like "79.6K"
+  channelId: string
+  channelName?: string
+  avatarUrl?: string
+  viewers: number
 }
 
+// Helper function to format viewer count
+const formatViewerCount = (viewers: number): string => {
+  if (viewers >= 1000000) {
+    return `${(viewers / 1000000).toFixed(1)}M`;
+  } else if (viewers >= 1000) {
+    return `${(viewers / 1000).toFixed(1)}K`;
+  }
+  return viewers.toString();
+  
+};
+
 export function LiveChannelItem({
+  channelId,
+  channelName,
   avatarUrl,
-  username,
-  category,
   viewers,
 }: LiveChannelItemProps) {
+  const displayName = channelName || 'Unknown Channel';
+  const fallbackLetter = displayName.charAt(0).toUpperCase();
+
   return (
-    <div className="flex items-center justify-between pr-3 py-1 hover:bg-muted transition rounded-md">
-      <div className="flex items-center gap-3">
-        <Avatar className="w-8 h-8 rounded-lg">
-          <AvatarImage src={avatarUrl} alt={username} />
-          <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col">
-          <span className="text-sm font-medium">{username}</span>
-          <span className="text-xs text-muted-foreground">{category}</span>
+    <Link href={`/channels/${channelId}`}>
+      <div className="flex items-center justify-between pr-3 py-1 hover:bg-muted transition rounded-md cursor-pointer">
+        <div className="flex items-center gap-3">
+          <Avatar className="w-8 h-8 rounded-lg">
+            <AvatarImage src={avatarUrl} alt={displayName} />
+            <AvatarFallback>{fallbackLetter}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">{displayName}</span>
+          </div>
+        </div>
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Dot className="text-red-500 fill-red-500 w-6 h-6 -mr-1" />
+          <span className="text-xs">{formatViewerCount(viewers)}</span>
         </div>
       </div>
-      <div className="flex items-center text-sm text-muted-foreground">
-        <Dot className="text-red-500 fill-red-500 w-10 h-10 -mr-3" />
-        {viewers}
-      </div>
-    </div>
+    </Link>
   )
 }

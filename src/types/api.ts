@@ -23,15 +23,44 @@ export interface Stream {
   thumbnailUrl?: string;
   isLive: boolean;
   viewers: number;
-  startedAt: string;
-  endedAt?: string;
-  channelId: string;
   channel: Channel;
-  createdAt: string;
-  updatedAt: string;
 }
 
-// Channel types
+// Stream category enum
+export enum StreamCategory {
+  GAMING = 'GAMING',
+  JUST_CHATTING = 'JUST_CHATTING',
+  CREATIVE = 'CREATIVE',
+  SPORTS = 'SPORTS',
+  TRAVEL_AND_OUTDOORS = 'TRAVEL_AND_OUTDOORS',
+  FOOD_AND_DRINK = 'FOOD_AND_DRINK',
+  FITNESS_AND_HEALTH = 'FITNESS_AND_HEALTH',
+  SCIENCE_AND_TECHNOLOGY = 'SCIENCE_AND_TECHNOLOGY',
+  EDUCATIONAL = 'EDUCATIONAL',
+  PODCAST = 'PODCAST',
+  TALK_SHOWS = 'TALK_SHOWS',
+  ESPORTS = 'ESPORTS',
+  POLITICS = 'POLITICS',
+  ASMR = 'ASMR',
+  VARIETY = 'VARIETY',
+  OTHER = 'OTHER'
+}
+
+// Live stream with channel DTO for /streams/live endpoint
+export interface LiveStreamDto {
+  streamId: string;
+  channelId: string;
+  title: string;
+  description?: string;
+  category: StreamCategory;
+  viewers: number;
+  isLive: boolean;
+  thumbnailUrl?: string;
+  channelName: string;
+  avatarUrl?: string;
+  playbackUrl: string;
+}
+
 export interface Channel {
   id: string;
   name: string;
@@ -40,10 +69,14 @@ export interface Channel {
   bannerUrl?: string;
   isLive: boolean;
   followers: number;
-  userId: string;
-  user: User;
-  createdAt: string;
-  updatedAt: string;
+}
+
+// DTO for live channels preview
+export interface ChannelPreviewDTO {
+  channelId: string;
+  name: string;
+  playbackUrl: string;
+  avatarUrl?: string;
 }
 
 // Blog types
@@ -80,13 +113,11 @@ export interface ApiResponse<T> {
 }
 
 export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 // Error types
@@ -103,4 +134,26 @@ export interface UploadResponse {
   filename: string;
   size: number;
   mimeType: string;
+}
+
+// Stream entity for past streams API
+export interface StreamEntity {
+  id: string;
+  channelId: string;
+  awsStreamId?: string;
+  title: string;
+  thumbnailUrl?: string;
+  isLive: boolean;
+  viewers: number;
+  description?: string;
+  startedAt: string;
+  endedAt?: string;
+  category: StreamCategory;
+  vodUrl?: string;
+}
+
+// Stream with channel DTO for /streams/finished/popular endpoint
+export interface StreamWithChannelDto {
+  stream: StreamEntity;
+  channel: ChannelPreviewDTO;
 }
