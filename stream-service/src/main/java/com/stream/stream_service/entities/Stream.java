@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,14 +18,15 @@ import com.stream.stream_service.enums.StreamCategory;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Stream {
+      @Id
+    @Column(name = "id")
+    private String id;
     
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @NotNull(message = "Channel ID cannot be null")
-    @Column(name = "channel_id", nullable = false)
+    @NotNull(message = "Channel ID cannot be null")    @Column(name = "channel_id", nullable = false)
     private String channelId;
+    
+    @Column(name = "aws_stream_id")
+    private String awsStreamId;
     
     @NotBlank(message = "Title cannot be blank")
     @Column(nullable = false)
@@ -51,7 +53,13 @@ public class Stream {
     @Column(name = "category", nullable = false)
     @NotNull(message = "Category cannot be null")
     private StreamCategory category = StreamCategory.OTHER;
-    
-    @Column(name = "vod_url")
+      @Column(name = "vod_url")
     private String vodUrl;
+    
+    @PrePersist
+    private void generateId() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString();
+        }
+    }
 }

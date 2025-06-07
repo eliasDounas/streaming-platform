@@ -47,9 +47,9 @@ public class ChannelServiceImpl extends ChannelServiceGrpc.ChannelServiceImplBas
             .build();
 
         responseObserver.onNext(response);
-        responseObserver.onCompleted();
-    }
+        responseObserver.onCompleted();    }
 
+    @Override
     public void getChannelByUserId(UserIdRequest request, StreamObserver<ChannelResponse> responseObserver) {
         String userId = request.getUserId();
 

@@ -36,10 +36,10 @@ public class StreamService {
     private DefaultStreamInfoService defaultStreamInfoService;
 
     @Autowired
-    private ChannelGrpcClient channelGrpcClient;
-
+    private ChannelGrpcClient channelGrpcClient;    
+    
     @Transactional
-    public Stream createStream(String arn) {
+    public Stream createStream(String arn, String awsStreamId) {
 
         ChannelDto channel = channelGrpcClient.getChannelByArn(arn);
         if (channel == null) {
@@ -53,6 +53,7 @@ public class StreamService {
 
         Stream stream = new Stream();
         stream.setChannelId(channel.getChannelId());
+        stream.setAwsStreamId(awsStreamId);
         stream.setTitle(title);
         stream.setDescription(description);
         stream.setCategory(category);
@@ -62,6 +63,16 @@ public class StreamService {
         stream.setViewers(0L);
 
         return streamRepository.save(stream);
+    }
+
+    /**
+     * Create a stream using only channel ARN (legacy method - AWS stream ID will be null)
+     * @param arn The channel ARN
+     * @return Created stream
+     */
+    @Transactional
+    public Stream createStream(String arn) {
+        return createStream(arn, null);
     }
 
     /**
@@ -128,9 +139,8 @@ public class StreamService {
 
         return Optional.empty(); // No live stream found
     }
-    
-    @Transactional
-    public Optional<Stream> incrementViewers(Long streamId) {
+      @Transactional
+    public Optional<Stream> incrementViewers(String streamId) {
         return streamRepository.findById(streamId)
                 .map(stream -> {
                     stream.setViewers(stream.getViewers() + 1);
@@ -139,7 +149,7 @@ public class StreamService {
     }
 
    
-    public Optional<Long> getViewersCount(Long streamId) {
+    public Optional<Long> getViewersCount(String streamId) {
         return streamRepository.findById(streamId)
                 .map(Stream::getViewers);
         }
@@ -164,7 +174,36 @@ public class StreamService {
         return streamRepository.save(stream);
     }
     
-    public void deleteStream(Long id, String userId) {
+    /**
+     * End a specific stream using AWS stream ID
+     * @param awsStreamId The AWS stream ID to identify the exact stream
+     * @return Updated stream if found
+     */
+    @Transactional
+    public Optional<Stream> endStreamByAwsStreamId(String awsStreamId) {
+        System.out.println("=== DEBUG: endStreamByAwsStreamId called ===");
+        System.out.println("AWS Stream ID: " + awsStreamId);
+        
+        Optional<Stream> streamOpt = streamRepository.findByAwsStreamId(awsStreamId);
+        
+        if (streamOpt.isPresent()) {
+            Stream stream = streamOpt.get();
+            System.out.println("Found stream ID: " + stream.getId() + 
+                             ", channelId: " + stream.getChannelId() +
+                             ", startedAt: " + stream.getStartedAt() + 
+                             ", isLive: " + stream.getIsLive());
+            
+            stream.setIsLive(false);
+            stream.setEndedAt(LocalDateTime.now());
+            Stream saved = streamRepository.save(stream);
+            System.out.println("Successfully ended stream ID: " + stream.getId());
+            return Optional.of(saved);
+        } else {
+            System.err.println("No stream found with AWS stream ID: " + awsStreamId);
+            return Optional.empty();
+        }
+    }
+      public void deleteStream(String id, String userId) {
 
         Optional<DefaultStreamInfo> defaultInfo = defaultStreamInfoService.getChannelWithUserId(userId);
         String channelId = defaultInfo.map(DefaultStreamInfo::getChannelId)
@@ -193,7 +232,7 @@ public class StreamService {
         return streamRepository.findByChannelIdAndIsLiveFalseOrderByStartedAtDesc(channelId, pageable);
     }
 
-      /**
+    /**
      * Get finished streams with full pagination metadata
      * @param channelId The channel ID to get finished streams for
      * @param page Page number (0-based)
@@ -261,60 +300,66 @@ public class StreamService {
             totalPages
         );
     }
-      /**
-     * Update thumbnail URL for the latest stream of a channel
-     * @param channelArn The channel ARN
+    
+
+
+    /**
+     * Update thumbnail URL for a specific stream using AWS stream ID
+     * @param awsStreamId The AWS stream ID to identify the exact stream
      * @param thumbnailUrl The thumbnail URL to set
      * @return Updated stream if found
      */
     @Transactional
-    public Optional<Stream> updateStreamThumbnail(String channelArn, String thumbnailUrl) {
-        // 1. Get channel info by ARN
-        ChannelDto channel = channelGrpcClient.getChannelByArn(channelArn);
-        if (channel == null || channel.getChannelId() == null) {
-            System.err.println("Channel not found for ARN: " + channelArn);
-            return Optional.empty();
-        }       
-        // 2. Find the live stream for this channel
-        Optional<Stream> streamOpt = streamRepository.findByChannelIdAndIsLiveTrue(channel.getChannelId());
+    public Optional<Stream> updateStreamThumbnailByAwsStreamId(String awsStreamId, String thumbnailUrl) {
+        System.out.println("=== DEBUG: updateStreamThumbnailByAwsStreamId called ===");
+        System.out.println("AWS Stream ID: " + awsStreamId);
+        System.out.println("Thumbnail URL: " + thumbnailUrl);
+        
+        Optional<Stream> streamOpt = streamRepository.findByAwsStreamId(awsStreamId);
         
         if (streamOpt.isPresent()) {
             Stream stream = streamOpt.get();
+            System.out.println("Found stream ID: " + stream.getId() + 
+                             ", channelId: " + stream.getChannelId() +
+                             ", startedAt: " + stream.getStartedAt() + 
+                             ", isLive: " + stream.getIsLive());
+            
             stream.setThumbnailUrl(thumbnailUrl);
             Stream saved = streamRepository.save(stream);
-            System.out.println("Updated thumbnail URL for stream ID: " + stream.getId() + ", Channel: " + channel.getChannelId());
+            System.out.println("Successfully updated thumbnail for stream ID: " + stream.getId());
             return Optional.of(saved);
         } else {
-            System.err.println("No stream found for channel: " + channel.getChannelId());
+            System.err.println("No stream found with AWS stream ID: " + awsStreamId);
             return Optional.empty();
         }
-    }   
-
-
+    }
     /**
-     * Update VOD URL for the most recent stream of a channel
-     * @param channelArn The channel ARN
+     * Update VOD URL for a specific stream using AWS stream ID
+     * @param awsStreamId The AWS stream ID to identify the exact stream
      * @param vodUrl The VOD URL to set
      * @return Updated stream if found
      */
     @Transactional
-    public Optional<Stream> updateStreamVodUrl(String channelArn, String vodUrl) {
-        // 1. Get channel info by ARN
-        ChannelDto channel = channelGrpcClient.getChannelByArn(channelArn);
-        if (channel == null || channel.getChannelId() == null) {
-            System.err.println("Channel not found for ARN: " + channelArn);
-            return Optional.empty();
-        }        // 2. Find the most recent finished stream for this channel (isLive = false, sorted by latest endedAt)
-        Optional<Stream> streamOpt = streamRepository.findTopByChannelIdAndIsLiveFalseOrderByEndedAtDesc(channel.getChannelId());
+    public Optional<Stream> updateStreamVodUrlByAwsStreamId(String awsStreamId, String vodUrl) {
+        System.out.println("=== DEBUG: updateStreamVodUrlByAwsStreamId called ===");
+        System.out.println("AWS Stream ID: " + awsStreamId);
+        System.out.println("VOD URL: " + vodUrl);
+        
+        Optional<Stream> streamOpt = streamRepository.findByAwsStreamId(awsStreamId);
         
         if (streamOpt.isPresent()) {
             Stream stream = streamOpt.get();
+            System.out.println("Found stream ID: " + stream.getId() + 
+                             ", channelId: " + stream.getChannelId() +
+                             ", startedAt: " + stream.getStartedAt() + 
+                             ", isLive: " + stream.getIsLive());
+            
             stream.setVodUrl(vodUrl);
             Stream saved = streamRepository.save(stream);
-            System.out.println("Updated VOD URL for stream ID: " + stream.getId() + ", Channel: " + channel.getChannelId());
+            System.out.println("Successfully updated VOD URL for stream ID: " + stream.getId());
             return Optional.of(saved);
         } else {
-            System.err.println("No stream found for channel: " + channel.getChannelId());
+            System.err.println("No stream found with AWS stream ID: " + awsStreamId);
             return Optional.empty();
         }
     }

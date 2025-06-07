@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/streams")
+@RequestMapping("/stream-service/public")
 @RequiredArgsConstructor
 public class StreamController {
 
@@ -27,7 +27,7 @@ public class StreamController {
     }
 
     // Get all live streams
-    @GetMapping("/live")
+    @GetMapping("/livestreams")
     public ResponseEntity<List<StreamWithChannelDto>> getAllLiveStreams() {
         return ResponseEntity.ok(streamService.getLiveStreams());
     }
@@ -44,17 +44,16 @@ public class StreamController {
     }    
     
     // Get all finished streams sorted by views with channel info and pagination metadata
-    @GetMapping("/finished/popular")
+    @GetMapping("/vods/popular")
     public ResponseEntity<PaginatedStreamResponse<StreamWithChannelDto>> getPopularFinishedStreams(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         PaginatedStreamResponse<StreamWithChannelDto> response = streamService.getFinishedStreamsWithChannelInfo(page, size);
         return ResponseEntity.ok(response);
     }
-    
-    // Increment stream viewers
+      // Increment stream viewers
     @PostMapping("/{id}/viewers")
-    public ResponseEntity<Stream> incrementViewers(@PathVariable Long id) {
+    public ResponseEntity<Stream> incrementViewers(@PathVariable String id) {
         return streamService.incrementViewers(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -62,16 +61,16 @@ public class StreamController {
 
     // Get viewers count
     @GetMapping("/{id}/viewers")
-    public ResponseEntity<Long> getViewersCount(@PathVariable Long id) {
+    public ResponseEntity<Long> getViewersCount(@PathVariable String id) {
         return streamService.getViewersCount(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }    
     
-    // Delete stream
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStream(@PathVariable Long id, @RequestParam String userId) {
-        streamService.deleteStream(id, userId);
-        return ResponseEntity.noContent().build();
-    }
+    // // Delete stream
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<Void> deleteStream(@PathVariable String id, @RequestParam String userId) {
+    //     streamService.deleteStream(id, userId);
+    //     return ResponseEntity.noContent().build();
+    // }
 }

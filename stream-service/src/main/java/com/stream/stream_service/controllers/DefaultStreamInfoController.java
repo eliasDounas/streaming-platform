@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/default-stream-info")
+@RequestMapping("/stream-service/default-stream-info")
 public class DefaultStreamInfoController {
 
     @Autowired

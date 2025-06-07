@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface StreamRepository extends JpaRepository<Stream, Long> {
+public interface StreamRepository extends JpaRepository<Stream, String> {
     
     List<Stream> findByChannelId(String channelId);
  
@@ -29,7 +29,9 @@ public interface StreamRepository extends JpaRepository<Stream, Long> {
     long countByIsLiveFalse();
       // Find the most recent stream for a channel (for updating VOD URL)
     Optional<Stream> findTopByChannelIdOrderByStartedAtDesc(String channelId);
-    
-    // Find the most recent finished stream for a channel (for updating VOD URL)
+      // Find the most recent finished stream for a channel (for updating VOD URL)
     Optional<Stream> findTopByChannelIdAndIsLiveFalseOrderByEndedAtDesc(String channelId);
+    
+    // Find stream by AWS stream ID
+    Optional<Stream> findByAwsStreamId(String awsStreamId);
 }

@@ -1,10 +1,9 @@
-services:
-  # Channel Service Database
+services:  # Channel Service Database
   channel-service-postgres:
     image: postgres:16-alpine
     container_name: pg-channel-service
     ports:
-      - "5433:5432" 
+      - "5432:5432" 
     environment:
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: testpass
@@ -14,13 +13,12 @@ services:
     restart: unless-stopped
     networks:
       - streaming-platform
-
   # Stream Service Database  
   stream-service-postgres:
     image: postgres:16-alpine
     container_name: pg-stream-service
     ports:
-      - "5434:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: testpass
