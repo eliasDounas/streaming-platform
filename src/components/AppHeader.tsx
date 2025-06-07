@@ -1,3 +1,5 @@
+"use client"
+
 import { 
   Breadcrumb,
   BreadcrumbItem,
@@ -12,8 +14,29 @@ import { LoginsDialog } from "@/components/auth-ui/logins-dialog";
 import { SignupDialog } from "@/components/auth-ui/signup-dialog";
 import { ThemeSwitch } from "@/components/theme-switch/ThemeSwitch";
 import SearchBar from "@/components/SearchBar";
+import { usePathname } from "next/navigation";
 
 export function AppHeader() {
+  const pathname = usePathname();
+    const getPageName = () => {
+    const path = pathname.split('/')[1]; // Get the first segment after '/'
+    
+    switch (path) {
+      case 'blogs':
+        return 'Blogs';
+      case 'channel':
+        return 'Channel';
+      case 'dashboard':
+        return 'Streamer Dashboard';
+      case 'stream':
+        return 'Live Stream';
+      case 'vods':
+        return 'VOD';
+      default:
+        return 'Home';
+    }
+  };
+
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-background">
       <div className="flex items-center gap-2 px-4">
@@ -25,13 +48,12 @@ export function AppHeader() {
         <Breadcrumb className="hidden md:block">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">
-                Building Your Application
+              <BreadcrumbLink href="/">
+                UpStream
               </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            </BreadcrumbItem>            <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+              <BreadcrumbPage>{getPageName()}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

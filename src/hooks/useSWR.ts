@@ -4,7 +4,7 @@ import React from 'react';
 // SWR configuration with Axios
 import useSWR from 'swr';
 import { channelApi, streamApi } from '@/lib/api';
-import { Stream, Channel, ChannelPreviewDTO,  PaginatedResponse, StreamWithChannelDto } from '@/types/api';
+import { Stream, Channel, ChannelPreviewDTO, StreamConnectionInfo, PaginatedResponse, StreamWithChannelDto } from '@/types/api';
 
 
 // Channel API fetcher
@@ -22,6 +22,8 @@ export function useLiveStreams() {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
+      shouldRetryOnError: false, // Don't retry on errors
+      errorRetryCount: 0, // No retries
     }
   );
 
@@ -60,6 +62,8 @@ export function usePastStreams(page: number = 0, size: number = 10) {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
+      shouldRetryOnError: false, // Don't retry on errors
+      errorRetryCount: 0, // No retries
     }
   );
 
@@ -109,6 +113,101 @@ export function useUserChannel(userId: string) {
 
   return {
     userChannel: data,
+    isLoading,
+    error,
+    refresh: mutate
+  };
+}
+
+// Hook for getting stream connection info for streamers
+export function useStreamConnectionInfo(userId: string) {
+  const { data, error, isLoading, mutate } = useSWR<StreamConnectionInfo>(
+    userId ? `/channels/streamer/${userId}` : null,
+    channelFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+      errorRetryCount: 0,
+    }
+  );
+
+  return {
+    connectionInfo: data,
+    isLoading,
+    error,
+    refresh: mutate
+  };
+}
+
+// New hook for individual stream by ID using streamApi
+export function useStream(streamId: string | null) {
+  const { data, error, isLoading, mutate } = useSWR<{stream: any, channel: any}>(
+    streamId ? `/public/livestream/${streamId}` : null,
+    streamFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false, // Don't retry on errors
+      errorRetryCount: 0, // No retries
+    }
+  );
+
+  // Transform the single stream data to LiveStreamDto format
+  const stream = React.useMemo(() => {
+    if (!data) return null;
+    
+    return {
+      streamId: data.stream.id.toString(),
+      channelId: data.stream.channelId,
+      title: data.stream.title,
+      description: data.stream.description,
+      category: data.stream.category,
+      viewers: data.stream.viewers,
+      isLive: data.stream.isLive,
+      thumbnailUrl: data.stream.thumbnailUrl,
+      channelName: data.channel.name,
+      avatarUrl: data.channel.avatarUrl,
+      playbackUrl: data.channel.playbackUrl,
+    };
+  }, [data]);
+
+  return {
+    stream,
+    isLoading,
+    error,
+    refresh: mutate
+  };
+}
+
+// New hook for public channel info using channelApi
+export function usePublicChannelInfo(channelId: string | null) {
+  const { data, error, isLoading, mutate } = useSWR<any>(
+    channelId ? `/public/${channelId}` : null,
+    channelFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false, // Don't retry on errors
+      errorRetryCount: 0, // No retries
+    }
+  );  // Transform the channel data to match the expected format
+  const channelInfo = React.useMemo(() => {
+    if (!data) return null;
+    
+    return {
+      channelId: data.channelId,
+      name: data.name,
+      description: data.description,
+      isLive: data.isLive,
+      playbackUrl: data.playbackUrl,
+      avatarUrl: data.avatarUrl || '',
+      createdAt: data.createdAt,
+    };
+  }, [data]);
+
+  return {
+    channelInfo,
     isLoading,
     error,
     refresh: mutate

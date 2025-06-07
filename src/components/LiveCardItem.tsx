@@ -6,6 +6,7 @@ import { LiveStreamDto, StreamCategory } from "@/types/api";
 
 interface LiveCardItemProps {
   stream: LiveStreamDto;
+  linkType?: 'stream' | 'vod'; // Determines whether to link to stream or vod pages
 }
 
 // Helper function to get display name for categories
@@ -44,17 +45,29 @@ const formatViewerCount = (viewers: number | undefined): string => {
   return viewers.toString();
 };
 
-const LiveCardItem = ({ stream }: LiveCardItemProps) => {
+const LiveCardItem = ({ stream, linkType = 'stream' }: LiveCardItemProps) => {
+  // Determine the base URL based on linkType
+  const baseUrl = linkType === 'vod' ? '/vods' : '/stream';
+  
   return (
-    <div className="group w-full min-w-[320px] max-w-[360px] rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm border border-border/40 shadow-lg hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] relative before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br before:from-primary/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-500 hover:before:opacity-100">
-      {/* Clickable thumbnail area - directs to stream */}
-      <Link href={`/streams/${stream.streamId}`}>        <div className="relative w-full h-[200px] overflow-hidden rounded-t-xl">
-          <Image
-            src={stream.thumbnailUrl || "/placeholder-thumbnail.jpg"}
-            alt={stream.title || 'Stream thumbnail'}
-            fill
-            className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
-          />
+    <div className="group w-full min-w-[320px] max-w-[360px] rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm border border-border/40 shadow-lg hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] relative before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br before:from-primary/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-500 hover:before:opacity-100">      {/* Clickable thumbnail area - directs to stream or vod */}      <Link href={`${baseUrl}/${stream.streamId}`}><div className="relative w-full h-[200px] overflow-hidden rounded-t-xl">
+          {stream.thumbnailUrl ? (
+            <Image
+              src={stream.thumbnailUrl}
+              alt={stream.title || 'Stream thumbnail'}
+              fill
+              className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gray-400 dark:bg-gray-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                  <Eye className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">No Thumbnail</p>
+              </div>
+            </div>
+          )}
             {/* Enhanced gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />          
@@ -92,7 +105,7 @@ const LiveCardItem = ({ stream }: LiveCardItemProps) => {
               )}
             </div>
           </Link>          <div className="flex-1 min-w-0">            {/* Enhanced Stream title */}
-            <Link href={`/streams/${stream.streamId}`}>
+            <Link href={`${baseUrl}/${stream.streamId}`}>
               <h3 className="font-bold text-foreground leading-snug group-hover:text-primary transition-colors duration-300 text-base hover:underline decoration-primary/50 decoration-2 underline-offset-2 truncate">
                 {stream.title || 'Untitled Stream'}
               </h3>

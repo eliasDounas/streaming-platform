@@ -15,6 +15,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { Badge } from "@/components/ui/badge"
 
 import {
   ChevronRight,
@@ -27,19 +28,20 @@ import {
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/",
     icon: House,
     isActive: true,
-  },
-  {
+  },  {
     title: "Following",
     url: "#",
     icon: Heart,
+    badge: "Soon",
   },
   {
     title: "Events",
     url: "#",
     icon: Calendar,
+    badge: "Soon",
   },
   {
     title: "Blog",
@@ -94,8 +96,7 @@ export function NavMain() {
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
-          ) : (
-            <SidebarMenuItem key={item.title}>
+          ) : (            <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
@@ -104,6 +105,11 @@ export function NavMain() {
                 <a href={item.url} className="flex items-center gap-2 w-full">
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
+                  {item.badge && (
+                    <Badge variant="coming_soon" className="ml-auto text-[10px] px-1.5 py-0.5">
+                      {item.badge}
+                    </Badge>
+                  )}
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>

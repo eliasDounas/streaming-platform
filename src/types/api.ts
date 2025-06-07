@@ -79,6 +79,13 @@ export interface ChannelPreviewDTO {
   avatarUrl?: string;
 }
 
+// Stream connection info for streamers
+export interface StreamConnectionInfo {
+  channelId: string;
+  streamKey: string;
+  ingestEndpoint: string;
+}
+
 // Blog types
 export interface Blog {
   id: string;
