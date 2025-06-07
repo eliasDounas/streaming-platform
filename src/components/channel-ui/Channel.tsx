@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import LiveCardList from '@/components/LiveCardList';
 import IvsPlayer from '../IvsPlayer';
+import ChannelVodsList from '../ChannelVodsList';
 import { Calendar, Heart, Share2, Loader2 } from 'lucide-react';
 import { usePublicChannelInfo } from '@/hooks/useSWR';
 
@@ -159,17 +160,8 @@ const Channel: React.FC<ChannelProps> = ({ channelId, channel: channelProp }) =>
           
             <IvsPlayer playbackUrl={channel.playbackUrl || ''} />
         </div>
-      )}
-
-      {/* Enhanced Recent Broadcasts Section */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Recent Broadcasts</h2>
-          <Button variant="outline" className="rounded-full">
-            View All
-          </Button>
-        </div>
-      </div>
+      )}      {/* Enhanced Recent Broadcasts Section */}
+      <ChannelVodsList channelId={channelId || channel.channelId || ''} channelName={channel.name} />
     </div>
   );
 };

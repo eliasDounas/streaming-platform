@@ -102,7 +102,7 @@ export function usePastStreams(page: number = 0, size: number = 10) {
 // New hook for user's channel status
 export function useUserChannel(userId: string) {
   const { data, error, isLoading, mutate } = useSWR<ChannelPreviewDTO>(
-    userId ? `/user/${userId}` : null,
+    userId ? `channels/user/${userId}` : null,
     channelFetcher,
     {
       revalidateOnFocus: false,
@@ -211,5 +211,57 @@ export function usePublicChannelInfo(channelId: string | null) {
     isLoading,
     error,
     refresh: mutate
+  };
+}
+
+// New hook for channel's finished streams using streamApi
+export function useChannelFinishedStreams(channelId: string | null, page: number = 0, size: number = 10) {
+  const { data, error, isLoading, mutate } = useSWR<{
+    content: any[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+  }>(
+    channelId ? `/public/channels/${channelId}/finished?page=${page}&size=${size}` : null,
+    streamFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+      errorRetryCount: 0,
+    }
+  );
+
+  // Transform the data to match expected format
+  const finishedStreams = React.useMemo(() => {
+    if (!data?.content) return [];
+    
+    return data.content.map(stream => ({
+      streamId: stream.id,
+      channelId: stream.channelId,
+      title: stream.title,
+      description: stream.description,
+      category: stream.category,
+      viewers: stream.viewers,
+      isLive: false, // Finished streams are never live
+      thumbnailUrl: stream.thumbnailUrl,
+      playbackUrl: stream.vodUrl || '',
+      startedAt: stream.startedAt,
+      endedAt: stream.endedAt,
+    }));
+  }, [data]);
+
+  return {
+    finishedStreams,
+    isLoading,
+    error,
+    refresh: mutate,
+    pagination: data ? {
+      page: data.page,
+      size: data.size,
+      totalElements: data.totalElements,
+      totalPages: data.totalPages,
+    } : null,
   };
 }

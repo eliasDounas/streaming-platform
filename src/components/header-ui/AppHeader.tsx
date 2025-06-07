@@ -12,9 +12,10 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { LoginsDialog } from "@/components/auth-ui/logins-dialog";
 import { SignupDialog } from "@/components/auth-ui/signup-dialog";
-import { ThemeSwitch } from "@/components/theme-switch/ThemeSwitch";
-import SearchBar from "@/components/SearchBar";
+import { ThemeSwitch } from "@/components/header-ui/theme-switch/ThemeSwitch";
+import SearchBar from "@/components/header-ui/SearchBar";
 import { usePathname } from "next/navigation";
+import { ChannelStatusButton } from "./ChannelStatusButton";
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -63,6 +64,7 @@ export function AppHeader() {
       </div>
       <div className="flex gap-2 md:gap-4 mx-2 md:mx-4">
         {/* TO DO - if not auth, we render this block, otherwise we rended ChannelStatusButton */}
+        <ChannelStatusButton userId="154566j523" />
         <LoginsDialog />
         <SignupDialog />
         <ThemeSwitch />

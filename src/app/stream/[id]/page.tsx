@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Chat from "@/components/chat-ui/Chat";
 import { PanelRightClose, PanelLeftOpen } from "lucide-react";
-import IvsPlayer from "@/components/IvsPlayer";
 import LiveStreamWithChannelInfo from "@/components/LiveStreamWithChannelInfo";
 import { useLiveStreams, useStream } from "@/hooks/useSWR";
 

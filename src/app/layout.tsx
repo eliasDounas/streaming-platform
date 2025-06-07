@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-switch/theme-provider";
+import { ThemeProvider } from "@/components/header-ui/theme-switch/theme-provider";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClientApolloProvider } from "./ApolloProvider";
@@ -22,7 +22,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-import { AppHeader } from "@/components/AppHeader";
+import { AppHeader } from "@/components/header-ui/AppHeader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

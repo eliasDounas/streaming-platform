@@ -1,7 +1,7 @@
 'use client'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DefaultStreamInfoForm } from './DefaultStreamInfoForm';
-import { StreamConnectionInfo } from './StreamConnectionInfo';
+import { DefaultStreamInfoForm } from './dashboard-ui/DefaultStreamInfoForm';
+import { StreamConnectionInfo } from './dashboard-ui/StreamConnectionInfo';
 
 const Dashboard = () => {
   return (

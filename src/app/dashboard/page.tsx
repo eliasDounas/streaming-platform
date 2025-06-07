@@ -1,4 +1,4 @@
-import Dashboard from '@/components/Dashboard';
+import Dashboard from '@/components/dashboard-ui/Dashboard';
 
 // should be only accessible if user has a channel
 export default function DashboardPage() {

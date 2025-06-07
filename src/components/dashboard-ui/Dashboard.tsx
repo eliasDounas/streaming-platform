@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DefaultStreamInfoForm } from './DefaultStreamInfoForm';
 import { StreamConnectionInfo } from './StreamConnectionInfo';
-import Channel from './channel-ui/Channel';
+import Channel from '../channel-ui/Channel';
 import { Settings, Key, User, Radio } from 'lucide-react';
 
 const Dashboard = () => { 
