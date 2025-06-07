@@ -67,6 +67,14 @@ public class StreamController {
                 .orElse(ResponseEntity.notFound().build());
     }    
     
+    // Get stream by ID with channel information
+    @GetMapping("/{streamId}")
+    public ResponseEntity<StreamWithChannelDto> getStreamById(@PathVariable String streamId) {
+        return streamService.getStreamWithChannelById(streamId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     // // Delete stream
     // @DeleteMapping("/{id}")
     // public ResponseEntity<Void> deleteStream(@PathVariable String id, @RequestParam String userId) {

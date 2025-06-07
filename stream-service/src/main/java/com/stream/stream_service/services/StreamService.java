@@ -363,4 +363,18 @@ public class StreamService {
             return Optional.empty();
         }
     }
+
+    /**
+     * Get a stream by ID with channel information
+     * @param streamId The stream ID to get
+     * @return Optional StreamWithChannelDto containing the stream and channel info if found
+     */
+    public Optional<StreamWithChannelDto> getStreamWithChannelById(String streamId) {
+        return streamRepository.findById(streamId)
+                .map(stream -> {
+                    List<ChannelDto> channels = channelGrpcClient.getChannelPreviewsByIds(List.of(stream.getChannelId()));
+                    ChannelDto channel = channels.isEmpty() ? null : channels.get(0);
+                    return new StreamWithChannelDto(stream, channel);
+                });
+    }
 }

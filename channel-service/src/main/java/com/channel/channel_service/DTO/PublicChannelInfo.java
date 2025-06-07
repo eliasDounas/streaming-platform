@@ -1,4 +1,7 @@
 package com.channel.channel_service.DTO;
+
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,5 +15,6 @@ public class PublicChannelInfo {
     private String description;
     private boolean isLive;
     private String playbackUrl;
-    private String avatarUrl; 
+    private String avatarUrl;
+    private LocalDateTime createdAt;
 }

@@ -70,9 +70,7 @@ public class ChannelService {
 
 
         return channelRepository.save(channel);
-    }
-
-    public PublicChannelInfo getPublicChannelInfo(String channelId) {
+    }    public PublicChannelInfo getPublicChannelInfo(String channelId) {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new ChannelNotFoundException("Channel not found"));
 
@@ -82,7 +80,8 @@ public class ChannelService {
             channel.getDescription(),
             channel.isLive(),
             channel.getPlaybackUrl(),
-            channel.getAvatarUrl()
+            channel.getAvatarUrl(),
+            channel.getCreatedAt()
         );
     }
 
