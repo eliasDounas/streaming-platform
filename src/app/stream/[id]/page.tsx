@@ -107,9 +107,8 @@ export default function StreamPage() {
             </Button>
             
               <span className="text-sm mx-auto pr-4 font-semibold font-stretch-ultra-condensed">Live Chat</span>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            <Chat />
+          </div>          <div className="flex-1 overflow-y-auto">
+            <Chat channelId={currentStream?.channelId || ''} />
           </div>
         </div>
       )}

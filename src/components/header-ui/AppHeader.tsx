@@ -25,7 +25,7 @@ export function AppHeader() {
     switch (path) {
       case 'blogs':
         return 'Blogs';
-      case 'channel':
+      case 'channels':
         return 'Channel';
       case 'dashboard':
         return 'Streamer Dashboard';
@@ -64,7 +64,7 @@ export function AppHeader() {
       </div>
       <div className="flex gap-2 md:gap-4 mx-2 md:mx-4">
         {/* TO DO - if not auth, we render this block, otherwise we rended ChannelStatusButton */}
-        <ChannelStatusButton userId="154566j523" />
+        <ChannelStatusButton />
         <LoginsDialog />
         <SignupDialog />
         <ThemeSwitch />

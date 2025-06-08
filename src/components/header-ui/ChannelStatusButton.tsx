@@ -4,21 +4,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Clapperboard, Plus, Loader2 } from "lucide-react";
 import { useUserChannel } from "@/hooks/useSWR";
-import { CreateChannelDialog } from "@/components/CreateChannelDialog";
+import { CreateChannelDialog } from "@/components/channel-ui/CreateChannelDialog";
 import Link from "next/link";
 
-interface ChannelStatusButtonProps {
-  userId: string;
-}
 
-export function ChannelStatusButton({ userId }: ChannelStatusButtonProps) {  const { userChannel, isLoading, refresh } = useUserChannel(userId);
+
+export function ChannelStatusButton(){
+  const { userChannel, isLoading, refresh } = useUserChannel();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const handleChannelCreated = () => {
     // Refresh the user channel data to pick up the newly created channel
     refresh();
   };
-  
   if (isLoading) {
     return (
       <Button disabled variant="outline" className="gap-2">
@@ -38,6 +36,7 @@ export function ChannelStatusButton({ userId }: ChannelStatusButtonProps) {  con
       </Button>
     );
   }
+
   // User doesn't have a channel (error 404 or no data) - show Create Channel button
   return (
     <>

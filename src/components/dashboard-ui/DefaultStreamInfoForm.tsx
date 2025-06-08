@@ -17,11 +17,6 @@ interface DefaultStreamInfoRequest {
   category: StreamCategory;
 }
 
-interface DefaultStreamInfoFormProps {
-  userId: string;
-  onSuccess?: () => void;
-  onError?: (error: string) => void;
-}
 
 // Helper function to format category labels
 const formatCategoryLabel = (category: StreamCategory): string => {
@@ -31,7 +26,7 @@ const formatCategoryLabel = (category: StreamCategory): string => {
     .join(' ');
 };
 
-export function DefaultStreamInfoForm({ userId, onSuccess, onError }: DefaultStreamInfoFormProps) {
+export function DefaultStreamInfoForm() {
   const [formData, setFormData] = useState<DefaultStreamInfoRequest>({
     title: '',
     description: '',
@@ -69,7 +64,7 @@ export function DefaultStreamInfoForm({ userId, onSuccess, onError }: DefaultStr
     
     try {
       // Send data to the stream service API
-      const response = await streamApi.post(`/default-stream-info/${userId}`, formData);
+      const response = await streamApi.post(`/default-stream-info`, formData);
       
       // Reset form on success
       setFormData({
@@ -78,16 +73,12 @@ export function DefaultStreamInfoForm({ userId, onSuccess, onError }: DefaultStr
         category: StreamCategory.OTHER
       });
       
-      if (onSuccess) {
-        onSuccess();
-      }
+      
     } catch (error: any) {
       console.error('Failed to save default stream info:', error);
       const errorMessage = error.response?.data?.message || 'Failed to save default stream information';
       
-      if (onError) {
-        onError(errorMessage);
-      }
+      
     } finally {
       setIsLoading(false);
     }

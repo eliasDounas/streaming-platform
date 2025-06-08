@@ -19,13 +19,6 @@ const streamApi = axios.create({
   },
 });
 
-// Analytics API instance
-const analyticsApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_ANALYTICS_API_URL || 'https://analytics.example.com/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
-export { channelApi,  streamApi, analyticsApi };
+
+export { channelApi,  streamApi  };

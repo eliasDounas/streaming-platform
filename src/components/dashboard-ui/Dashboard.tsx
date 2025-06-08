@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DefaultStreamInfoForm } from './DefaultStreamInfoForm';
 import { StreamConnectionInfo } from './StreamConnectionInfo';
 import Channel from '../channel-ui/Channel';
-import { Settings, Key, User, Radio } from 'lucide-react';
+import { Settings, Key, User } from 'lucide-react';
 
 const Dashboard = () => { 
   return (
@@ -63,9 +63,6 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="p-6">
                 <DefaultStreamInfoForm 
-                  userId="user123" 
-                  onSuccess={() => console.log('Stream info saved successfully!')}
-                  onError={(error) => console.error('Error saving stream info:', error)}
                 />
               </CardContent>
             </Card>
@@ -87,7 +84,7 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-6">
-                <StreamConnectionInfo userId="154566523" />
+                <StreamConnectionInfo />
               </CardContent>
             </Card>
           </TabsContent>

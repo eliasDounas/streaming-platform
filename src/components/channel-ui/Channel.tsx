@@ -1,11 +1,8 @@
 import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import LiveCardList from '@/components/LiveCardList';
 import IvsPlayer from '../IvsPlayer';
-import ChannelVodsList from '../ChannelVodsList';
+import ChannelVodsList from './ChannelVodsList';
 import { Calendar, Heart, Share2, Loader2 } from 'lucide-react';
 import { usePublicChannelInfo } from '@/hooks/useSWR';
 
@@ -48,13 +45,17 @@ const Channel: React.FC<ChannelProps> = ({ channelId, channel: channelProp }) =>
       }
       
       return date.toLocaleDateString('en-US', { 
-        month: 'long', 
+        month: 'short', 
+        day: 'numeric',
         year: 'numeric' 
       });
     } catch {
       return 'Unknown'; // Return fallback if any error
     }
-  };// Show loading state
+  };
+ 
+  
+  // Show loading state
   if (channelId && isLoading) {
     return (
       <div className="w-full max-w-6xl mx-auto space-y-6">

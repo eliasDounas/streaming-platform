@@ -8,12 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStreamConnectionInfo } from '@/hooks/useSWR';
 import { Copy, Eye, EyeOff, Loader2, RefreshCw } from 'lucide-react';
 
-interface StreamConnectionInfoProps {
-  userId: string;
-}
 
-export function StreamConnectionInfo({ userId }: StreamConnectionInfoProps) {
-  const { connectionInfo, isLoading, error, refresh } = useStreamConnectionInfo(userId);
+
+export function StreamConnectionInfo() {
+  const { connectionInfo, isLoading, error, refresh } = useStreamConnectionInfo();
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 

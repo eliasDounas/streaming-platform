@@ -100,9 +100,9 @@ export function usePastStreams(page: number = 0, size: number = 10) {
 }
 
 // New hook for user's channel status
-export function useUserChannel(userId: string) {
+export function useUserChannel() {
   const { data, error, isLoading, mutate } = useSWR<ChannelPreviewDTO>(
-    userId ? `channels/user/${userId}` : null,
+    `channels/my-channel`,
     channelFetcher,
     {
       revalidateOnFocus: false,
@@ -120,9 +120,9 @@ export function useUserChannel(userId: string) {
 }
 
 // Hook for getting stream connection info for streamers
-export function useStreamConnectionInfo(userId: string) {
+export function useStreamConnectionInfo() {
   const { data, error, isLoading, mutate } = useSWR<StreamConnectionInfo>(
-    userId ? `/channels/streamer/${userId}` : null,
+    `/channels/connection-info` ,
     channelFetcher,
     {
       revalidateOnFocus: false,
@@ -265,3 +265,22 @@ export function useChannelFinishedStreams(channelId: string | null, page: number
     } : null,
   };
 }
+
+// Chat token hook for AWS IVS Chat
+export const useChatToken = (channelId: string | null) => {
+  const { data, error, isLoading } = useSWR(
+    channelId ? `/channels/${channelId}/chatroom/token` : null,
+    channelFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 5 * 60 * 1000, // 5 minutes - since token has long session
+    }
+  );
+
+  return {
+    chatToken: data?.token,
+    isLoading,
+    error,
+  };
+};

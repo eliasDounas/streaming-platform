@@ -25,7 +25,7 @@ interface CreateChannelDialogProps {
 interface ChannelCreateRequest {
   name: string;
   description: string;
-  avatarUrl: string;
+  avatar: File | null;
 }
 
 interface ChannelCreateResponse {
@@ -33,17 +33,17 @@ interface ChannelCreateResponse {
   message: string;
 }
 
-export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: CreateChannelDialogProps) {
-  const [formData, setFormData] = useState<ChannelCreateRequest>({
+export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: CreateChannelDialogProps) {  const [formData, setFormData] = useState<ChannelCreateRequest>({
     name: '',
     description: '',
-    avatarUrl: '',
+    avatar: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const handleInputChange = (field: keyof ChannelCreateRequest, value: string) => {
+  
+  const handleInputChange = (field: keyof ChannelCreateRequest, value: string | File | null) => {
     // For channel name, enforce AWS IVS naming conventions
-    if (field === 'name') {
+    if (field === 'name' && typeof value === 'string') {
       // Remove spaces and invalid characters, keep only alphanumeric, hyphens, and underscores
       value = value.replace(/[^a-zA-Z0-9\-_]/g, '');
     }
@@ -83,7 +83,6 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
     }
     return null;
   };
-
   const validateForm = (): boolean => {
     const nameError = validateChannelName(formData.name);
     if (nameError) {
@@ -91,14 +90,27 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
       return false;
     }
     
-    if (!formData.description.trim()) {
-      setError('Channel description is required');
+    // Description is optional now, but if provided, must be at least 10 characters
+    if (formData.description.trim() && formData.description.trim().length < 10) {
+      setError('Channel description must be at least 10 characters long if provided');
       return false;
     }
-    if (formData.description.trim().length < 10) {
-      setError('Channel description must be at least 10 characters long');
-      return false;
+    
+    // Validate avatar file if provided
+    if (formData.avatar) {
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (formData.avatar.size > maxSize) {
+        setError('Avatar image must be smaller than 5MB');
+        return false;
+      }
+      
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(formData.avatar.type)) {
+        setError('Avatar must be a JPEG, PNG, or GIF image');
+        return false;
+      }
     }
+    
     return true;
   };
 
@@ -108,13 +120,23 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    setError(null);
+    setError(null);    try {
+      // Create FormData for multipart/form-data request
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name.trim());
+      
+      if (formData.description.trim()) {
+        formDataToSend.append('description', formData.description.trim());
+      }
+      
+      if (formData.avatar) {
+        formDataToSend.append('avatar', formData.avatar);
+      }
 
-    try {
-      const response = await channelApi.post<ChannelCreateResponse>('/channels', {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        avatarUrl: formData.avatarUrl.trim() || undefined, // Send undefined if empty
+      const response = await channelApi.post<ChannelCreateResponse>('/channels', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       if (response.data) {
@@ -122,7 +144,7 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
         setFormData({
           name: '',
           description: '',
-          avatarUrl: '',
+          avatar: null,
         });
         
         // Close dialog
@@ -144,13 +166,12 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
       setIsSubmitting(false);
     }
   };
-
   const handleClose = () => {
     if (!isSubmitting) {
       setFormData({
         name: '',
         description: '',
-        avatarUrl: '',
+        avatar: null,
       });
       setError(null);
       onOpenChange(false);
@@ -184,11 +205,9 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
             />            <p className="text-xs text-muted-foreground">
               {formData.name.length}/20 characters • Must start with a letter, no consecutive special characters
             </p>
-          </div>
-
-          {/* Channel Description */}
+          </div>          {/* Channel Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description">Description (optional)</Label>
             <Textarea
               id="description"
               placeholder="Describe what your channel is about..."
@@ -202,22 +221,22 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
             <p className="text-xs text-muted-foreground">
               {formData.description.length}/500 characters
             </p>
-          </div>
-
-          {/* Avatar URL */}
+          </div>          {/* Avatar Image Upload */}
           <div className="space-y-2">
-            <Label htmlFor="avatarUrl">Avatar URL (optional)</Label>
+            <Label htmlFor="avatar">Avatar Image (optional)</Label>
             <Input
-              id="avatarUrl"
-              type="url"
-              placeholder="https://example.com/your-avatar.jpg"
-              value={formData.avatarUrl}
-              onChange={(e) => handleInputChange('avatarUrl', e.target.value)}
+              id="avatar"
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                handleInputChange('avatar', file);
+              }}
               disabled={isSubmitting}
               className="w-full"
             />
             <p className="text-xs text-muted-foreground">
-              Leave empty to use a default avatar
+              {formData.avatar ? `Selected: ${formData.avatar.name}` : 'JPEG, PNG, or GIF • Max 5MB'}
             </p>
           </div>
 
@@ -236,10 +255,9 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
               disabled={isSubmitting}
             >
               Cancel
-            </Button>
-            <Button
+            </Button>            <Button
               type="submit"
-              disabled={isSubmitting || !formData.name.trim() || !formData.description.trim()}
+              disabled={isSubmitting || !formData.name.trim()}
             >
               {isSubmitting ? (
                 <>
