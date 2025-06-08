@@ -4,8 +4,7 @@ import lombok.Data;
 
 @Data
 public class ChannelCreateRequest {
-    private String userId;
     private String name;
     private String description;
-    private String avatarUrl;
+    // avatarUrl removed - will be handled via file upload
 }

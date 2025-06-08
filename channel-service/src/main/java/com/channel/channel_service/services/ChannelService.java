@@ -70,7 +70,10 @@ public class ChannelService {
 
 
         return channelRepository.save(channel);
-    }    public PublicChannelInfo getPublicChannelInfo(String channelId) {
+    }   
+    
+    public PublicChannelInfo getPublicChannelInfo(String channelId) {
+
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new ChannelNotFoundException("Channel not found"));
 
@@ -95,18 +98,31 @@ public class ChannelService {
             chatRoom.getEndpoint()
         );
 }
-   
+     public String generateChatTokenForChannel(String channelId, String userId) {
+        // Find the channel first
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new ChannelNotFoundException("Channel not found"));
+        
+        // Get the chat room from the channel
+        ChatRoom chatRoom = channel.getChatRoom();
+        if (chatRoom == null) {
+            throw new ChatRoomNotFoundException("No chat room found for this channel");
+        }
+        
+        // Generate token using the chat room ARN
+        return awsIvsService.createChatToken(chatRoom.getArn(), userId);
+    }
+
     public String generateChatTokenIfValid(String chatRoomArn, String userId) {
 
         // Validate if chatRoomArn exists in DB
         chatRoomRepository.findByArn(chatRoomArn)
             .orElseThrow(() -> new ChatRoomNotFoundException("ChatRoom ARN not found"));
         
-        // (Optional) You can add more checks, e.g., user permissions here
 
         // If valid, generate token from awsIvsService
         return awsIvsService.createChatToken(chatRoomArn, userId);
-    } 
+    }
     public StreamConnectionInfo getPrivateStreamerConnectionInfo(String userId) {
         Channel channel = channelRepository.findByUserId(userId)
             .orElseThrow(() -> new ChannelNotFoundException("Channel not found for user: " + userId));
