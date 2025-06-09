@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 interface BlogCardProps {
-  id: number;
+  id: string; // Changed from number to string to match GraphQL ID type
   title: string;
   hook: string;
   writer: string;

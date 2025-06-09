@@ -1,3 +1,5 @@
+"use client";
+
 import { BlogCard } from "@/components/blogs-ui/blog-card";
 import MarkdownViewer from "@/components/blogs-ui/blog-view";
 import { useQuery } from '@apollo/client';

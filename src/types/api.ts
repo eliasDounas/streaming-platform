@@ -164,3 +164,71 @@ export interface StreamWithChannelDto {
   stream: StreamEntity;
   channel: ChannelPreviewDTO;
 }
+
+// GraphQL Blog types
+export interface NewsBlog {
+  id: string;
+  description?: string;
+  category?: string;
+  channelId: string;
+  title: string;
+  hook?: string;
+  content: string;
+  tags?: string[];
+  coverImg?: string;
+  readingTime?: number;
+  createdAt?: string;
+}
+
+export interface GamingBlog {
+  id: string;
+  description?: string;
+  category?: string;
+  channelId: string;
+  title: string;
+  hook?: string;
+  content: string;
+  tags?: string[];
+  coverImg?: string;
+  readingTime?: number;
+  createdAt?: string;
+}
+
+export interface ChannelPreview {
+  channelId: string;
+  name: string;
+  playbackUrl: string;
+  avatarUrl: string;
+}
+
+export interface NewsBlogOutput {
+  newsBlog: NewsBlog;
+  channel: ChannelPreview;
+}
+
+export interface GamingBlogOutput {
+  gamingBlog: GamingBlog;
+  channel: ChannelPreview;
+}
+
+export interface NewsBlogInput {
+  description?: string;
+  category?: string;
+  title?: string;
+  hook?: string;
+  content?: string;
+  tags?: string[];
+  coverImg?: string;
+  readingTime?: number;
+}
+
+export interface GamingBlogInput {
+  description?: string;
+  category?: string;
+  title?: string;
+  hook?: string;
+  content?: string;
+  tags?: string[];
+  coverImg?: string;
+  readingTime?: number;
+}

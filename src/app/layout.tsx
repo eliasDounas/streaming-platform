@@ -3,6 +3,7 @@ import { ThemeProvider } from "@/components/header-ui/theme-switch/theme-provide
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClientApolloProvider } from "./ApolloProvider";
+import KeycloakProvider from "@/components/auth/KeycloakProvider";
 // Initialize Zustand auth store (no provider needed!)
 import '@/store';
 
@@ -43,28 +44,29 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  return (
+}>) {  return (
     <ClientApolloProvider>
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SidebarProvider>
-            <AppSidebar />            
-            <SidebarInset>
-              <AppHeader />
-              {children}
-            </SidebarInset>
-          </SidebarProvider>
-        </ThemeProvider>
+        <KeycloakProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SidebarProvider>
+              <AppSidebar />            
+              <SidebarInset>
+                <AppHeader />
+                {children}
+              </SidebarInset>
+            </SidebarProvider>
+          </ThemeProvider>
+        </KeycloakProvider>
       </body>
     </html>
 </ClientApolloProvider>

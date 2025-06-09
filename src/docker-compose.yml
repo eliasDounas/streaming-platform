@@ -1,0 +1,350 @@
+services:
+  user-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"  # HTTP port
+      - "9090:9090"  # gRPC port
+    environment:
+      # Spring profiles
+      - SPRING_PROFILES_ACTIVE=docker
+      # Database configuration
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/userdb
+      - SPRING_DATASOURCE_USERNAME=userservice
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-changeme}
+      # Kafka configuration
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      # OAuth2 configuration
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_URL:-http://keycloak:8080}/realms/master
+      # JVM settings
+      - JAVA_OPTS=-XX:MaxRAMPercentage=75.0 -XX:+UseG1GC
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      kafka:
+        condition: service_started
+    networks:
+      - user-service-network
+    restart: unless-stopped
+    # Security: Read-only root filesystem
+    read_only: true
+    # Security: Temporary filesystem for /tmp
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+    # Security: Drop all capabilities and add only necessary ones
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    # Security: No new privileges
+    security_opt:
+      - no-new-privileges:true
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8081 && nc -z localhost 9090 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: user-service-db
+    environment:
+      - POSTGRES_DB=userdb
+      - POSTGRES_USER=userservice
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Security: Custom PostgreSQL configuration
+      - ./docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      # Database initialization script
+      - ./docker/postgres/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - user-service-network
+    restart: unless-stopped
+    # Security settings
+    user: postgres
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    security_opt:
+      - no-new-privileges:true
+    # Enable logical replication for CDC
+    command: ["postgres", "-c", "wal_level=logical"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U userservice -d userdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: user-service-keycloak
+    command: start-dev
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=keycloak
+      # Disable theme caching for development
+      - KC_SPI_THEME_STATIC_MAX_AGE=-1
+      - KC_SPI_THEME_CACHE_THEMES=false
+      - KC_SPI_THEME_CACHE_TEMPLATES=false
+      - KC_HEALTH_ENABLED=true
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - user-service-network
+    restart: unless-stopped
+    # Security settings
+    # cap_drop:
+    #   - ALL
+    # security_opt:
+    #   - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 5s
+      retries: 20
+
+  # CDC Infrastructure
+  zookeeper:
+    image: zookeeper:3.9.0
+    container_name: user-service-zookeeper
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    networks:
+      - user-service-network
+    restart: unless-stopped
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.4
+    container_name: user-service-kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka:9092,EXTERNAL://127.0.0.1:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_LISTENERS=INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093
+      # CDC specific configurations
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
+      # Message size for CDC events
+      - KAFKA_CFG_MESSAGE_MAX_BYTES=10485760
+      - KAFKA_CFG_REPLICA_FETCH_MAX_BYTES=10485760
+    depends_on:
+      - zookeeper
+    networks:
+      - user-service-network
+    restart: unless-stopped
+
+  connect:
+    image: debezium/connect:2.4.0.Final
+    container_name: user-service-debezium-connect
+    ports:
+      - "8083:8083"
+      - "8778:8778"
+    links:
+      - kafka
+      - postgres
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=debezium-events
+      - CONFIG_STORAGE_TOPIC=debezium_configs
+      - OFFSET_STORAGE_TOPIC=debezium_offsets
+      - STATUS_STORAGE_TOPIC=debezium_statuses
+      - CONFIG_STORAGE_REPLICATION_FACTOR=1
+      - OFFSET_STORAGE_REPLICATION_FACTOR=1
+      - STATUS_STORAGE_REPLICATION_FACTOR=1
+      # Connect worker settings for CDC
+      - CONNECT_REST_ADVERTISED_HOST_NAME=connect
+      - CONNECT_REST_PORT=8083
+      - CONNECT_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false
+      - CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false
+      - CONNECT_INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_INTERNAL_KEY_CONVERTER_SCHEMAS_ENABLE=false
+      - CONNECT_INTERNAL_VALUE_CONVERTER_SCHEMAS_ENABLE=false
+      # Plugin path
+      - CONNECT_PLUGIN_PATH=/kafka/connect
+      # Logging
+      - CONNECT_LOG4J_ROOT_LOGLEVEL=INFO
+      - CONNECT_LOG4J_LOGGERS=org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
+    depends_on:
+      - kafka
+      - postgres
+    networks:
+      - user-service-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: user-service-kafka-ui
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+      - KAFKA_CLUSTERS_0_SCHEMA_REGISTRY=http://localhost:8081
+      - SPRING_PROFILES_ACTIVE=prod
+    ports:
+      - "9000:8080"
+    depends_on:
+      - kafka
+    networks:
+      - user-service-network
+    restart: unless-stopped
+
+  debezium-ui:
+    image: debezium/debezium-ui:2.4
+    container_name: user-service-debezium-ui
+    platform: linux/amd64
+    environment:
+      - KAFKA_CONNECT_URIS=http://connect:8083
+    ports:
+      - "9091:8080"
+    depends_on:
+      - connect
+    networks:
+      - user-service-network
+    restart: unless-stopped
+
+  setup-debezium-connector:
+    image: curlimages/curl
+    container_name: user-service-debezium-setup
+    depends_on:
+      connect:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    links:
+      - connect
+    environment:
+      DEBEZIUM_CONFIG: |
+        {
+          "name": "keycloak-user-entity-connector",
+          "config": {
+            "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+            "tasks.max": "1",
+            "database.hostname": "postgres",
+            "database.port": "5432",
+            "database.user": "keycloak",
+            "database.password": "keycloak",
+            "database.dbname": "keycloak",
+            "database.server.name": "keycloak-server",
+            "topic.prefix": "keycloak.cdc",
+            "table.include.list": "public.user_entity",
+            "plugin.name": "pgoutput",
+            "slot.name": "keycloak_user_entity_slot",
+            "publication.name": "keycloak_user_entity_publication",
+            "publication.autocreate.mode": "filtered",
+            "schema.history.internal.kafka.topic": "keycloak.schema.history",
+            "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+            "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+            "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+            "key.converter.schemas.enable": "false",
+            "value.converter.schemas.enable": "false",
+            "transforms": "unwrap",
+            "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+            "transforms.unwrap.drop.tombstones": "false",
+            "transforms.unwrap.delete.handling.mode": "rewrite",
+            "transforms.unwrap.add.fields": "op,ts_ms,source.ts_ms",
+            "heartbeat.interval.ms": "30000",
+            "snapshot.mode": "initial"
+          } 
+        }
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...';
+        sleep 60;
+        echo 'Checking if Kafka Connect is ready...';
+        while ! nc -z connect 8083; do
+          echo 'Waiting for Kafka Connect...';
+          sleep 5;
+        done;
+        echo 'Kafka Connect is up!';
+        
+        echo 'Waiting for Keycloak to initialize...';
+        while ! nc -z keycloak 8080; do
+          echo 'Waiting for Keycloak...';
+          sleep 5;
+        done;
+        echo 'Keycloak is up!';
+        
+        sleep 30;
+        echo 'Checking Kafka Connect API...';
+        while ! curl -s http://connect:8083/connectors > /dev/null; do
+          echo 'Waiting for Kafka Connect API...';
+          sleep 5;
+        done;
+        
+        echo 'Setting up Debezium connector...';
+        echo \"$$DEBEZIUM_CONFIG\" > /tmp/debezium-connector-config.json;
+        cat /tmp/debezium-connector-config.json;
+        
+        response=$$(curl -s -w '%{http_code}' -X POST -H 'Content-Type: application/json' --data @/tmp/debezium-connector-config.json http://connect:8083/connectors);
+        http_code=$${response: -3};
+        
+        if [ \"$$http_code\" = \"201\" ] || [ \"$$http_code\" = \"409\" ]; then
+          echo 'Connector created successfully or already exists';
+        else
+          echo 'Failed to create connector. HTTP code:' $$http_code;
+          echo 'Response:' $$response;
+          exit 1;
+        fi;
+        
+        echo 'Checking connector status...';
+        curl -s http://connect:8083/connectors/keycloak-user-entity-connector/status | grep -o '\"state\":\"[^\"]*\"';
+      "
+    networks:
+      - user-service-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  user-service-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

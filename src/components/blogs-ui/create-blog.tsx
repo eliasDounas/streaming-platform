@@ -18,15 +18,13 @@ import { Button } from "@/components/ui/button";
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
 export default function CreateBlog() {
-  const router = useRouter();
-  const [title, setTitle] = useState("");
+  const router = useRouter();  const [title, setTitle] = useState("");
   const [hook, setHook] = useState("");
-  const [category, setCategory] = useState("Gaming News");
+  const [category, setCategory] = useState("news"); // Default to "news" for Gaming News
   const [tags, setTags] = useState("");
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [readingTime, setReadingTime] = useState("");
   const [content, setContent] = useState<string>("");
-
   const [createNewsBlog] = useMutation(CREATE_NEWS_BLOG);
   const [createGamingBlog] = useMutation(CREATE_GAMING_BLOG);
   
@@ -41,25 +39,19 @@ export default function CreateBlog() {
       title,
       hook,
       description: hook,  //to be removed
-      category,
-      channelId: 'someChannelId',
-      userId: 'someUserId',
+      category: category === 'news' ? 'Gaming News' : 'Game Review',
       content,
       tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       coverImg: coverImage ? 'https://url-to-image-storage.com/image.jpg' : '',
       readingTime: parseInt(readingTime, 10),
-    };
-
-    try {
+    };    try {
       if (category === 'news') {
-        const { data } = await createNewsBlog({ variables: { input: blogInput } });
-        router.push(`news/${data.id}`);
-
+        const { data } = await createNewsBlog({ variables: { news: blogInput } });
+        router.push(`/blogs/news`); // Navigate to news list for now
         console.log('Created News Blog:', data.createNewsBlogs);
       } else {
-        const { data } = await createGamingBlog({ variables: { input: blogInput } });
-        router.push(`reviews/${data.id}`);
-
+        const { data } = await createGamingBlog({ variables: { gaming: blogInput } });
+        router.push(`/blogs/reviews`); // Navigate to reviews list for now
         console.log('Created Gaming Blog:', data.createGamingBlogs);
       }
 
