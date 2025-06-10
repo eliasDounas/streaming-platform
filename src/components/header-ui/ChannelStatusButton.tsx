@@ -5,19 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Clapperboard, Plus, Loader2 } from "lucide-react";
 import { useUserChannel } from "@/hooks/useSWR";
 import { CreateChannelDialog } from "@/components/channel-ui/CreateChannelDialog";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 
-
-
 export function ChannelStatusButton(){
-  const { userChannel, isLoading, refresh } = useUserChannel();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { userChannel, isLoading: channelLoading, refresh } = useUserChannel();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const handleChannelCreated = () => {
     // Refresh the user channel data to pick up the newly created channel
     refresh();
   };
-  if (isLoading) {
+
+  // Don't render anything if user is not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Show loading state while checking authentication or channel status
+  if (authLoading || channelLoading) {
     return (
       <Button disabled variant="outline" className="gap-2">
         <Loader2 className="h-4 w-4 animate-spin" />
@@ -25,6 +32,7 @@ export function ChannelStatusButton(){
       </Button>
     );
   }
+
   // User has a channel - show Dashboard button
   if (userChannel) {
     return (

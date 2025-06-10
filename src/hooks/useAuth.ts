@@ -1,42 +1,21 @@
 "use client"
 
 import { useKeycloak } from '@react-keycloak/web'
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { useUserStore } from '@/store/userStore'
 
 export function useAuth() {
   const { keycloak, initialized } = useKeycloak()
-  const { userInfo, setUserInfo, clearUserInfo } = useUserStore()
-
-  // Sync user info with store when authentication state changes
-  useEffect(() => {
-    if (keycloak.authenticated && keycloak.tokenParsed) {
-      const userInfo = {
-        id: keycloak.tokenParsed.sub!,
-        username: keycloak.tokenParsed.preferred_username,
-        email: keycloak.tokenParsed.email,
-        name: keycloak.tokenParsed.name,
-        roles: keycloak.realmAccess?.roles || [],
-      }
-      
-      // Log user ID when successfully authenticated
-      console.log('🎉 User successfully authenticated! User ID:', userInfo.id)
-      console.log('📋 Full user info:', userInfo)
-      
-      setUserInfo(userInfo)
-    } else {
-      clearUserInfo()
-      console.log('🚪 User logged out or not authenticated')
-    }
-  }, [keycloak.authenticated, keycloak.tokenParsed, keycloak.realmAccess, setUserInfo, clearUserInfo])
+  const { userInfo, clearUserInfo } = useUserStore()
 
   const login = useCallback(() => {
     keycloak.login()
   }, [keycloak])
 
   const logout = useCallback(() => {
+    clearUserInfo()
     keycloak.logout()
-  }, [keycloak])
+  }, [keycloak, clearUserInfo])
 
   const register = useCallback(() => {
     keycloak.register()
@@ -47,10 +26,12 @@ export function useAuth() {
   }, [keycloak.token])
 
   const getUserInfo = useCallback(() => {
-    if (!keycloak.authenticated) return null
+    // Return userInfo from the store if available, otherwise fall back to keycloak data
+    if (userInfo) {
+      return userInfo
+    }
     
-    // Return from store if available, otherwise parse from token
-    if (userInfo) return userInfo
+    if (!keycloak.authenticated) return null
     
     return {
       id: keycloak.tokenParsed?.sub || '',
@@ -61,25 +42,34 @@ export function useAuth() {
     }
   }, [keycloak.authenticated, keycloak.tokenParsed, keycloak.realmAccess, userInfo])
 
+  const hasRole = useCallback((role: string) => {
+    // Check from store first, then fall back to keycloak
+    if (userInfo) {
+      return userInfo.roles.includes(role)
+    }
+    return keycloak.hasRealmRole(role)
+  }, [keycloak, userInfo])
+
+  const getUsername = useCallback(() => {
+    return userInfo?.username || keycloak.tokenParsed?.preferred_username || null
+  }, [userInfo, keycloak.tokenParsed])
+
   const getUserId = useCallback(() => {
     return userInfo?.id || keycloak.tokenParsed?.sub || null
   }, [userInfo, keycloak.tokenParsed])
 
-  const hasRole = useCallback((role: string) => {
-    return keycloak.hasRealmRole(role)
-  }, [keycloak])
-
   return {
     isAuthenticated: keycloak.authenticated || false,
     isLoading: !initialized,
-    userInfo, // Add userInfo from store
     login,
     logout,
     register,
     getToken,
     getUserInfo,
-    getUserId, // Add convenience method for user ID
+    getUsername,
+    getUserId,
     hasRole,
     keycloak,
+    userInfo, // Direct access to user store data
   }
 }
