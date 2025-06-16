@@ -1,134 +1,10 @@
-services:
-  # Channel Service Database
-  channel-service-postgres:
-    image: postgres:16-alpine
-    container_name: pg-channel-service
-    ports:
-      - "5433:5432" 
-    environment:
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: testpass
-      POSTGRES_DB: channel_db
-    volumes:
-      - pgdata1:/var/lib/postgresql/data
-    restart: unless-stopped
-    networks:
-      - streaming-platform
-
-  # Stream Service Database  
-  stream-service-postgres:
-    image: postgres:16-alpine
-    container_name: pg-stream-service
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: testpass
-      POSTGRES_DB: stream_db
-    volumes:
-      - pgdata2:/var/lib/postgresql/data
-    restart: unless-stopped
-    networks:
-      - streaming-platform
-
-  # --------------------------------------
-  # 3) MongoDB for Blog Service
-  # --------------------------------------
-  blog-mongo:
-    image: mongo:6.0
-    container_name: blog-mongo
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_DATABASE=database
-    volumes:
-      - mongo-data:/data/db
-    restart: unless-stopped
-    networks:
-      - streaming-platform
-
-  # --------------------------------------
-  # 4) Channel Service (Spring Boot + gRPC)
-  # --------------------------------------
-  channel-service:
-    build:
-      context: ./channel-service
-      dockerfile: Dockerfile
-    container_name: channel-app
-    ports:
-      - "8080:8080"   # HTTP Spring Boot
-      - "9090:9090"   # gRPC
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://channel-service-postgres:5432/channel_db
-      - SPRING_DATASOURCE_USERNAME=testuser
-      - SPRING_DATASOURCE_PASSWORD=testpass
-    depends_on:
-      - channel-service-postgres
-    restart: unless-stopped
-    networks:
-      - streaming-platform
-
-  # --------------------------------------
-  # 5) Stream Service (Spring Boot)
-  # --------------------------------------
-  stream-service:
-    build:
-      context: ./stream-service
-      dockerfile: Dockerfile
-    container_name: stream-app
-    ports:
-      - "8081:8081"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stream-service-postgres:5432/stream_db
-      - SPRING_DATASOURCE_USERNAME=testuser
-      - SPRING_DATASOURCE_PASSWORD=testpass
-      - GRPC_CLIENT_CHANNELSERVICE_ADDRESS=static://channel-service:9090
-      - GRPC_CLIENT_CHANNELSERVICE_NEGOTIATION_TYPE=plaintext
-    depends_on:
-      - stream-service-postgres
-      - channel-service
-    restart: unless-stopped
-    networks:
-      - streaming-platform
-
-  # --------------------------------------
-  # 6) Blog Service (Spring Boot + MongoDB + gRPC Client)
-  # --------------------------------------
-  blog-service:
-    build:
-      context: ./blog-service
-      dockerfile: Dockerfile
-    container_name: blog-service
-    ports:
-      - "8083:8083"
-    environment:
-      - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_DATA_MONGODB_URI=mongodb://blog-mongo:27017/database
-      - GRPC_CLIENT_CHANNELSERVICE_ADDRESS=static://channel-service:9090
-      - GRPC_CLIENT_CHANNELSERVICE_NEGOTIATION_TYPE=plaintext
-    depends_on:
-      - blog-mongo
-      - channel-service
-    restart: unless-stopped
-    networks:
-      - streaming-platform
-
-volumes:
-  pgdata1:
-  pgdata2:
-  mongo-data:
-
-networks:
-  streaming-platform:
-    driver: bridge
-
-
-# services:  # Channel Service Database
+# services:
+#   # Channel Service Database
 #   channel-service-postgres:
 #     image: postgres:16-alpine
 #     container_name: pg-channel-service
 #     ports:
-#       - "5432:5432" 
+#       - "5433:5432" 
 #     environment:
 #       POSTGRES_USER: testuser
 #       POSTGRES_PASSWORD: testpass
@@ -138,6 +14,7 @@ networks:
 #     restart: unless-stopped
 #     networks:
 #       - streaming-platform
+
 #   # Stream Service Database  
 #   stream-service-postgres:
 #     image: postgres:16-alpine
@@ -154,43 +31,84 @@ networks:
 #     networks:
 #       - streaming-platform
 
-#   # Channel Service
+#   # --------------------------------------
+#   # 3) MongoDB for Blog Service
+#   # --------------------------------------
+#   blog-mongo:
+#     image: mongo:6.0
+#     container_name: blog-mongo
+#     ports:
+#       - "27017:27017"
+#     environment:
+#       - MONGO_INITDB_DATABASE=database
+#     volumes:
+#       - mongo-data:/data/db
+#     restart: unless-stopped
+#     networks:
+#       - streaming-platform
+
+#   # --------------------------------------
+#   # 4) Channel Service (Spring Boot + gRPC)
+#   # --------------------------------------
 #   channel-service:
 #     build:
 #       context: ./channel-service
 #       dockerfile: Dockerfile
 #     container_name: channel-app
 #     ports:
-#       - "8080:8080"    # HTTP Spring Boot
-#       - "9090:9090"    # gRPC
+#       - "8080:8080"   # HTTP Spring Boot
+#       - "9090:9090"   # gRPC
+#     environment:
+#       - SPRING_DATASOURCE_URL=jdbc:postgresql://channel-service-postgres:5432/channel_db
+#       - SPRING_DATASOURCE_USERNAME=testuser
+#       - SPRING_DATASOURCE_PASSWORD=testpass
 #     depends_on:
 #       - channel-service-postgres
-#     environment:
-#       SPRING_DATASOURCE_URL: jdbc:postgresql://channel-service-postgres:5432/channel_db
-#       SPRING_DATASOURCE_USERNAME: testuser
-#       SPRING_DATASOURCE_PASSWORD: testpass
 #     restart: unless-stopped
 #     networks:
 #       - streaming-platform
 
-#   # Stream Service
+#   # --------------------------------------
+#   # 5) Stream Service (Spring Boot)
+#   # --------------------------------------
 #   stream-service:
 #     build:
-#       context: ./stream-service 
+#       context: ./stream-service
 #       dockerfile: Dockerfile
 #     container_name: stream-app
 #     ports:
 #       - "8081:8081"
+#     environment:
+#       - SPRING_DATASOURCE_URL=jdbc:postgresql://stream-service-postgres:5432/stream_db
+#       - SPRING_DATASOURCE_USERNAME=testuser
+#       - SPRING_DATASOURCE_PASSWORD=testpass
+#       - GRPC_CLIENT_CHANNELSERVICE_ADDRESS=static://channel-service:9090
+#       - GRPC_CLIENT_CHANNELSERVICE_NEGOTIATION_TYPE=plaintext
 #     depends_on:
 #       - stream-service-postgres
-#       - channel-service  # Wait for channel service to be ready
+#       - channel-service
+#     restart: unless-stopped
+#     networks:
+#       - streaming-platform
+
+#   # --------------------------------------
+#   # 6) Blog Service (Spring Boot + MongoDB + gRPC Client)
+#   # --------------------------------------
+#   blog-service:
+#     build:
+#       context: ./blog-service
+#       dockerfile: Dockerfile
+#     container_name: blog-service
+#     ports:
+#       - "8083:8083"
 #     environment:
-#       SPRING_DATASOURCE_URL: jdbc:postgresql://stream-service-postgres:5432/stream_db
-#       SPRING_DATASOURCE_USERNAME: testuser
-#       SPRING_DATASOURCE_PASSWORD: testpass
-#       # gRPC client configuration - connect to channel-service container
-#       GRPC_CLIENT_CHANNELSERVICE_ADDRESS: static://channel-service:9090
-#       GRPC_CLIENT_CHANNELSERVICE_NEGOTIATION_TYPE: plaintext
+#       - SPRING_PROFILES_ACTIVE=dev
+#       - SPRING_DATA_MONGODB_URI=mongodb://blog-mongo:27017/database
+#       - GRPC_CLIENT_CHANNELSERVICE_ADDRESS=static://channel-service:9090
+#       - GRPC_CLIENT_CHANNELSERVICE_NEGOTIATION_TYPE=plaintext
+#     depends_on:
+#       - blog-mongo
+#       - channel-service
 #     restart: unless-stopped
 #     networks:
 #       - streaming-platform
@@ -198,8 +116,90 @@ networks:
 # volumes:
 #   pgdata1:
 #   pgdata2:
+#   mongo-data:
 
 # networks:
 #   streaming-platform:
 #     driver: bridge
+
+
+services:  # Channel Service Database
+  channel-service-postgres:
+    image: postgres:16-alpine
+    container_name: pg-channel-service
+    ports:
+      - "5432:5432" 
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: channel_db
+    volumes:
+      - pgdata1:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - streaming-platform
+  # Stream Service Database  
+  stream-service-postgres:
+    image: postgres:16-alpine
+    container_name: pg-stream-service
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: stream_db
+    volumes:
+      - pgdata2:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - streaming-platform
+
+  # Channel Service
+  channel-service:
+    build:
+      context: ./channel-service
+      dockerfile: Dockerfile
+    container_name: channel-app
+    ports:
+      - "8080:8080"    # HTTP Spring Boot
+      - "9090:9090"    # gRPC
+    depends_on:
+      - channel-service-postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://channel-service-postgres:5432/channel_db
+      SPRING_DATASOURCE_USERNAME: testuser
+      SPRING_DATASOURCE_PASSWORD: testpass
+    restart: unless-stopped
+    networks:
+      - streaming-platform
+
+  # Stream Service
+  stream-service:
+    build:
+      context: ./stream-service 
+      dockerfile: Dockerfile
+    container_name: stream-app
+    ports:
+      - "8081:8081"
+    depends_on:
+      - stream-service-postgres
+      - channel-service  # Wait for channel service to be ready
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stream-service-postgres:5432/stream_db
+      SPRING_DATASOURCE_USERNAME: testuser
+      SPRING_DATASOURCE_PASSWORD: testpass
+      # gRPC client configuration - connect to channel-service container
+      GRPC_CLIENT_CHANNELSERVICE_ADDRESS: static://channel-service:9090
+      GRPC_CLIENT_CHANNELSERVICE_NEGOTIATION_TYPE: plaintext
+    restart: unless-stopped
+    networks:
+      - streaming-platform
+
+volumes:
+  pgdata1:
+  pgdata2:
+
+networks:
+  streaming-platform:
+    driver: bridge
 
