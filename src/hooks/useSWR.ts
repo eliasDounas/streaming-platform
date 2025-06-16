@@ -180,20 +180,48 @@ export function useStream(streamId: string | null) {
   };
 }
 
+// Safe fetcher for public channel info that handles string responses
+const safeChannelFetcher = async (url: string) => {
+  try {
+    const response = await channelApi.get(url);
+    const data = response.data;
+    
+    // Check if response is a string (likely a token) instead of expected object
+    if (typeof data === 'string') {
+      console.warn('Received string response instead of object:', data.substring(0, 50) + '...');
+      throw new Error('Invalid response format: expected object but got string');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error fetching channel info:', error);
+    throw error;
+  }
+};
+
 // New hook for public channel info using channelApi
 export function usePublicChannelInfo(channelId: string | null) {
   const { data, error, isLoading, mutate } = useSWR<any>(
     channelId ? `/public/${channelId}` : null,
-    channelFetcher,
+    safeChannelFetcher,
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       shouldRetryOnError: false, // Don't retry on errors
       errorRetryCount: 0, // No retries
+      refreshInterval: 10000, // Refresh every 10 seconds
     }
-  );  // Transform the channel data to match the expected format
+  );
+
+  // Transform the channel data to match the expected format
   const channelInfo = React.useMemo(() => {
     if (!data) return null;
+    
+    // Additional safety check in case data is not the expected object
+    if (typeof data !== 'object' || data === null) {
+      console.warn('Channel data is not an object:', data);
+      return null;
+    }
     
     return {
       channelId: data.channelId,
