@@ -7,7 +7,6 @@ import java.util.List;
 public class NewsBlogInput {
     private String description;
     private String category;
-    private String userId;
     private String title;
     private String hook;
     private String content;

@@ -80,7 +80,6 @@ type Mutation {
 input NewsBlogInput {
     description: String
     category: String
-    userId: String
     title: String 
     hook: String
     content: String
@@ -92,7 +91,6 @@ input NewsBlogInput {
 input GamingBlogInput {
     description: String
     category: String
-    userId: String
     title: String
     hook: String
     content: String

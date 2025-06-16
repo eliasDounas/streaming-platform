@@ -7,6 +7,7 @@ import com.example.morphine.input.GamingBlogInput;
 import com.example.morphine.model.GamingBlog;
 import com.example.morphine.service.GamingBlogService;
 import com.example.morphine.client.ChannelServiceClient;
+import com.example.morphine.config.GraphQLConfig;
 import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
 
@@ -22,19 +23,16 @@ public class GamingBlogResolver {
     public GamingBlogResolver(GamingBlogService service, ChannelServiceClient channelClient) {
         this.service = service;
         this.channelClient = channelClient;
-    }
-
-    @MutationMapping
+    }    @MutationMapping
     public GamingBlogOutputDTO createGamingBlogs(@Argument("gaming") GamingBlogInput input) {
         if (input == null) {
             throw new IllegalArgumentException("Gaming input cannot be null");
         }
 
-        String userId;
-        try {
-            userId = input.getUserId();
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Invalid userId: " + input.getUserId());
+        // Extract userId from X-User-Id header
+        String userId = GraphQLConfig.extractUserIdFromRequest();
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("User ID is required in X-User-Id header");
         }
 
         ChannelDTO channel = channelClient.getChannelByUserId(userId);
@@ -46,6 +44,43 @@ public class GamingBlogResolver {
         blog.setChannelId(channel.getChannelId());
         GamingBlog created = service.create(blog);
         return new GamingBlogOutputDTO(created, channel);
+    }    @MutationMapping
+    public GamingBlogOutputDTO updateGamingBlog(@Argument String id, @Argument("gaming") GamingBlogInput input) {
+        if (input == null) {
+            throw new IllegalArgumentException("Gaming input cannot be null");
+        }
+
+        // Extract userId from X-User-Id header
+        String userId = GraphQLConfig.extractUserIdFromRequest();
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("User ID is required in X-User-Id header");
+        }
+
+        // Verify the blog exists and belongs to the user
+        GamingBlog existingBlog = service.getById(id)
+                .orElseThrow(() -> new IllegalArgumentException("GamingBlog not found with id: " + id));
+
+        // Get the user's channel to verify ownership
+        ChannelDTO channel = channelClient.getChannelByUserId(userId);
+        if (channel == null) {
+            throw new IllegalArgumentException("No channel found for userId: " + userId);
+        }
+
+        // Verify the blog belongs to this user's channel
+        if (!channel.getChannelId().equals(existingBlog.getChannelId())) {
+            throw new IllegalArgumentException("You can only update your own blog posts");
+        }
+
+        // Update the blog
+        GamingBlog updatedBlog = convert(input);
+        updatedBlog.setChannelId(channel.getChannelId());
+        GamingBlog saved = service.update(id, updatedBlog);
+        
+        if (saved == null) {
+            throw new IllegalArgumentException("Failed to update blog with id: " + id);
+        }
+        
+        return new GamingBlogOutputDTO(saved, channel);
     }
 
     @QueryMapping
