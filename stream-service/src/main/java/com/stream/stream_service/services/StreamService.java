@@ -88,14 +88,18 @@ public class StreamService {
                     return new StreamWithChannelDto(stream, channel);
                 });
     }
-    
-    
-    /**
+        /**
      * Get all live streams with channel information
      * @return List of StreamWithChannelDto containing live streams and their associated channel info
      */
     public List<StreamWithChannelDto> getLiveStreams() {
         List<Stream> streams = streamRepository.findByIsLive(true);
+        
+        // Return empty list immediately if no live streams
+        if (streams.isEmpty()) {
+            return List.of();
+        }
+        
         List<String> channelIds = streams.stream()
                 .map(Stream::getChannelId)
                 .toList();
