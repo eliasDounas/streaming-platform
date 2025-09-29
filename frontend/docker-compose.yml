@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  streaming-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_CHANNEL_API_URL=${NEXT_PUBLIC_CHANNEL_API_URL:-http://localhost:8080/channel-service}
+      - NEXT_PUBLIC_STREAM_API_URL=${NEXT_PUBLIC_STREAM_API_URL:-http://localhost:8081/stream-service}
+    restart: unless-stopped
+    networks:
+      - streaming-network
+
+  # Development version with hot reload
+  streaming-frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_CHANNEL_API_URL=${NEXT_PUBLIC_CHANNEL_API_URL:-http://localhost:8080/channel-service}
+      - NEXT_PUBLIC_STREAM_API_URL=${NEXT_PUBLIC_STREAM_API_URL:-http://localhost:8081/stream-service}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped
+    networks:
+      - streaming-network
+    profiles:
+      - dev
+
+networks:
+  streaming-network:
+    driver: bridge
