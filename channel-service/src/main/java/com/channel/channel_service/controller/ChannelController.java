@@ -37,43 +37,27 @@ public class ChannelController {
             @RequestHeader("X-User-Id") String userId,
             @RequestParam("name") String name,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "avatar", required = false) MultipartFile avatarFile) {
+            @RequestParam(value = "avatar", required = false) MultipartFile avatarFile) throws java.io.IOException {
         
-        try {
-            // Validate inputs
-            if (userId == null || userId.trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ChannelCreateResponse(null, "User ID is required"));
-            }
-            
-            if (name == null || name.trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ChannelCreateResponse(null, "Channel name is required"));
-            }
-
-            // Upload avatar first to get the URL
-            String avatarUrl = null;
-            if (avatarFile != null && !avatarFile.isEmpty()) {
-                avatarUrl = avatarService.uploadAvatar(avatarFile, userId);
-            }
-
-            // Create channel with the avatar URL
-            Channel channel = channelService.createChannel(userId, name, description, avatarUrl);
-
-            ChannelCreateResponse response = new ChannelCreateResponse(channel.getChannelId(), "Channel created successfully");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ChannelCreateResponse(null, e.getMessage()));
-        } catch (Exception e) {
-            // Log the actual error but don't expose internal details
-            System.err.println("Channel creation error: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ChannelCreateResponse(null, "Internal server error occurred during channel creation"));
+        // Only validate business-critical fields for whitespace-only content
+        if (name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Channel name cannot be empty");
         }
+
+        // Upload avatar first to get the URL
+        String avatarUrl = null;
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            avatarUrl = avatarService.uploadAvatar(avatarFile, userId);
+        }
+
+        // Create channel with the avatar URL
+        Channel channel = channelService.createChannel(userId, name, description, avatarUrl);
+
+        ChannelCreateResponse response = new ChannelCreateResponse(channel.getChannelId(), "Channel created successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-      @GetMapping("/channels/{channelId}/chatroom/token")
+      
+    @GetMapping("/channels/{channelId}/chatroom/token")
     public ResponseEntity<Map<String, String>> getChatToken(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable String channelId) {
@@ -83,7 +67,8 @@ public class ChannelController {
     
     @GetMapping("/channels/connection-info")
     public ResponseEntity<StreamConnectionInfo> getStreamConnectionInfo(@RequestHeader("X-User-Id") String userId) {
-        return ResponseEntity.ok(channelService.getPrivateStreamerConnectionInfo(userId));
+        StreamConnectionInfo info = channelService.getPrivateStreamerConnectionInfo(userId);
+        return ResponseEntity.ok(info);
     }
       
     @PutMapping("/channels/{channelId}")
@@ -114,8 +99,10 @@ public class ChannelController {
                 channel.getName(),
                 channel.getPlaybackUrl(),
                 channel.getAvatarUrl()
-            );        return ResponseEntity.ok(preview);
+            );        
+            return ResponseEntity.ok(preview);
         } else {
-            return ResponseEntity.notFound().build();        }
+            return ResponseEntity.notFound().build();
+        }
     }
 }
