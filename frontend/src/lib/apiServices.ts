@@ -1,6 +1,6 @@
 // API service functions for mutations and direct calls
 import { channelApi, streamApi } from '@/lib/api';
-import { Stream, Channel, ChannelPreviewDTO, LiveStreamDto } from '@/types/api';
+import { ChannelPreviewDTO, LiveStreamDto } from '@/types/api';
 
 // ========== STREAM SERVICES ==========
 export const streamServices = {
@@ -9,8 +9,6 @@ export const streamServices = {
     const response = await streamApi.get('/live');
     return response.data;
   },
-
-  
 };
 
 // ========== CHANNEL SERVICES ==========

@@ -12,13 +12,14 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-}
+// const data = {
+//   user: {
+//     name: "shadcn",
+//     email: "m@example.com",
+//     avatar: "/avatars/shadcn.jpg",
+//   },
+// }
+
 // if not authenticated, don't show NavUser
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (

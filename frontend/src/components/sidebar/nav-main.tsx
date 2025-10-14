@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   Collapsible,
   CollapsibleContent,
@@ -30,7 +32,6 @@ const items = [
     title: "Home",
     url: "/",
     icon: House,
-    isActive: true,
   },  {
     title: "Following",
     url: "#",
@@ -50,71 +51,93 @@ const items = [
     items: [
       {
         title: "Game Reviews",
-        url: "#",
+        url: "/blogs/reviews",
       },
       {
         title: "Gaming News",
-        url: "#",
+        url: "/blogs/news",
+      },
+      {
+        title: "Create Blog",
+        url: "/blogs/create",
       },
     ],
+        
   },
 ]
 
 export function NavMain() {
+  const pathname = usePathname()
+  
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) =>
-          item.items && item.items.length > 0 ? (
+        {items.map((item) => {
+          const isActive = item.url === pathname
+          const hasActiveChild = item.items?.some((subItem) => pathname.startsWith(subItem.url))
+          
+          return item.items && item.items.length > 0 ? (
             <Collapsible
               key={item.title}
               asChild
-              defaultOpen={item.isActive}
+              defaultOpen={hasActiveChild}
               className="group/collapsible"
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.title}>
                     {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                    <span className={hasActiveChild ? "font-semibold" : ""}>{item.title}</span>
                     <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {item.items.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild>
-                          <a href={subItem.url}>
-                            <span>{subItem.title}</span>
-                          </a>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    {item.items.map((subItem) => {
+                      const isSubItemActive = pathname === subItem.url
+                      return (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton asChild isActive={isSubItemActive}>
+                            <Link href={subItem.url}>
+                              <span className={isSubItemActive ? "font-semibold" : ""}>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      )
+                    })}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
-          ) : (            <SidebarMenuItem key={item.title}>
+          ) : (            
+          <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                isActive={item.isActive}
+                isActive={isActive}
               >
-                <a href={item.url} className="flex items-center gap-2 w-full">
+                <Link 
+                  href={item.url} 
+                  className="flex items-center gap-2 w-full"
+                  onClick={(e) => {
+                    if (item.url === "#") {
+                      e.preventDefault();
+                    }
+                  }}
+                >
                   {item.icon && <item.icon />}
-                  <span>{item.title}</span>
+                  <span className={isActive ? "font-semibold" : ""}>{item.title}</span>
                   {item.badge && (
                     <Badge variant="coming_soon" className="ml-auto text-[10px] px-1.5 py-0.5">
                       {item.badge}
                     </Badge>
                   )}
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )
-        )}
+        })}
       </SidebarMenu>
     </SidebarGroup>
   )

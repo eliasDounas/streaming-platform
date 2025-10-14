@@ -44,7 +44,9 @@ export default function CreateBlog() {
       tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       coverImg: coverImage ? 'https://url-to-image-storage.com/image.jpg' : '',
       readingTime: parseInt(readingTime, 10),
-    };    try {
+    };    
+    
+    try {
       if (category === 'news') {
         const { data } = await createNewsBlog({ variables: { news: blogInput } });
         router.push(`/blogs/news`); // Navigate to news list for now
@@ -87,7 +89,7 @@ export default function CreateBlog() {
 
         <div>
           <Label htmlFor="readingTime" className="mb-2">Reading Time Estimate (in minutes)<span className="text-red-500 -ml-1">*</span></Label>
-          <Input id="readingTime" type="number" value={readingTime} onChange={(e) => setReadingTime(e.target.value)} className="max-w-xs" required />
+          <Input id="readingTime" type="number" min={1} value={readingTime} onChange={(e) => setReadingTime(e.target.value)} className="max-w-xs" required />
         </div>
 
         <div> 

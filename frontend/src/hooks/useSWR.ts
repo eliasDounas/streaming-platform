@@ -4,7 +4,7 @@ import React from 'react';
 // SWR configuration with Axios
 import useSWR from 'swr';
 import { channelApi, streamApi } from '@/lib/api';
-import { Stream, Channel, ChannelPreviewDTO, StreamConnectionInfo, PaginatedResponse, StreamWithChannelDto } from '@/types/api';
+import { ChannelPreviewDTO, StreamConnectionInfo, PaginatedResponse, StreamWithChannelDto } from '@/types/api';
 
 
 // Channel API fetcher

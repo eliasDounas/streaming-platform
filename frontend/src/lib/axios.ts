@@ -1,11 +1,11 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import type { KeycloakInstance } from 'keycloak-js';
+import Keycloak from 'keycloak-js';
 
 // Get Keycloak instance (we'll need to import this from the provider)
-let keycloakInstance: KeycloakInstance | null = null;
+let keycloakInstance: Keycloak.KeycloakInstance | null = null;
 
 // Function to set Keycloak instance
-export const setKeycloakInstance = (keycloak: KeycloakInstance) => {
+export const setKeycloakInstance = (keycloak: Keycloak.KeycloakInstance) => {
   keycloakInstance = keycloak;
 };
 

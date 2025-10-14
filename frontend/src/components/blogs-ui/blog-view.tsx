@@ -84,7 +84,7 @@ Thanks for reading! 👋
 `;
 
     return (
-      <div className="max-w-4xl mx-auto px-6 py-10 bg-white dark:bg-gray-950/50 text-gray-900 dark:text-white">
+      <div className="max-w-4xl mx-auto px-6 py-10 bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
         <ReactMarkdown
           components={{
             h1: ({ node, ...props }) => (

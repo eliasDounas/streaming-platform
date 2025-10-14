@@ -148,7 +148,8 @@ const Channel: React.FC<ChannelProps> = ({ channelId, channel: channelProp }) =>
                   <Share2 className="w-4 h-4 mr-2" />
                   Share
                 </Button>
-              </div>            </div>
+              </div>            
+            </div>
           </div>
         </div>
 
