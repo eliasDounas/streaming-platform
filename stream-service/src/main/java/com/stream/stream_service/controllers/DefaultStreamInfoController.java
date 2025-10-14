@@ -18,9 +18,9 @@ public class DefaultStreamInfoController {
     
     @GetMapping
     public ResponseEntity<DefaultStreamInfo> getByChannelId(@RequestHeader("X-User-Id") String userId) {
-        return defaultStreamInfoService.getChannelWithUserId(userId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return defaultStreamInfoService.getStreamInfoWithUserId(userId)
+                                        .map(ResponseEntity::ok)
+                                        .orElse(ResponseEntity.notFound().build());
     }
     
     @PostMapping

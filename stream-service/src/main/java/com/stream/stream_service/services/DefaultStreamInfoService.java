@@ -31,7 +31,7 @@ public class DefaultStreamInfoService {
         return defaultStreamInfoRepository.findByChannelId(channelId);
     }
     
-    public Optional<DefaultStreamInfo> getChannelWithUserId(String userId) {
+    public Optional<DefaultStreamInfo> getStreamInfoWithUserId(String userId) {
         // Step 1: Get the channel from gRPC
         ChannelDto channel;
         try {

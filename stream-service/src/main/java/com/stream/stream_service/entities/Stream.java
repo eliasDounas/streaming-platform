@@ -18,11 +18,13 @@ import com.stream.stream_service.enums.StreamCategory;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Stream {
-      @Id
+      
+    @Id
     @Column(name = "id")
     private String id;
     
-    @NotNull(message = "Channel ID cannot be null")    @Column(name = "channel_id", nullable = false)
+    @NotNull(message = "Channel ID cannot be null")    
+    @Column(name = "channel_id", nullable = false)
     private String channelId;
     
     @Column(name = "aws_stream_id")
@@ -46,14 +48,16 @@ public class Stream {
     
     @Column(name = "started_at")
     private LocalDateTime startedAt;
-      @Column(name = "ended_at")
+      
+    @Column(name = "ended_at")
     private LocalDateTime endedAt;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false)
     @NotNull(message = "Category cannot be null")
     private StreamCategory category = StreamCategory.OTHER;
-      @Column(name = "vod_url")
+      
+    @Column(name = "vod_url")
     private String vodUrl;
     
     @PrePersist

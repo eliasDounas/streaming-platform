@@ -4,6 +4,7 @@ import com.stream.stream_service.DTO.StreamWithChannelDto;
 import com.stream.stream_service.DTO.PaginatedStreamResponse;
 import com.stream.stream_service.entities.Stream;
 import com.stream.stream_service.services.StreamService;
+import com.stream.stream_service.services.StreamQueryService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -17,11 +18,12 @@ import java.util.List;
 public class StreamController {
 
     private final StreamService streamService;
+    private final StreamQueryService streamQueryService;
 
     // Get live stream by channel ID
     @GetMapping("/channels/{channelId}/live")
     public ResponseEntity<StreamWithChannelDto> getLiveStream(@PathVariable String channelId) {
-        return streamService.getLiveStreamByChannelId(channelId)
+        return streamQueryService.getLiveStreamByChannelId(channelId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -29,7 +31,7 @@ public class StreamController {
     // Get all live streams
     @GetMapping("/livestreams")
     public ResponseEntity<List<StreamWithChannelDto>> getAllLiveStreams() {
-        return ResponseEntity.ok(streamService.getLiveStreams());
+        return ResponseEntity.ok(streamQueryService.getLiveStreams());
     }
     
 
@@ -39,7 +41,7 @@ public class StreamController {
             @PathVariable String channelId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PaginatedStreamResponse<Stream> response = streamService.getFinishedStreamsWithMetadata(channelId, page, size);
+        PaginatedStreamResponse<Stream> response = streamQueryService.getFinishedStreamsWithMetadata(channelId, page, size);
         return ResponseEntity.ok(response);
     }    
     
@@ -48,7 +50,7 @@ public class StreamController {
     public ResponseEntity<PaginatedStreamResponse<StreamWithChannelDto>> getPopularFinishedStreams(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PaginatedStreamResponse<StreamWithChannelDto> response = streamService.getFinishedStreamsWithChannelInfo(page, size);
+        PaginatedStreamResponse<StreamWithChannelDto> response = streamQueryService.getFinishedStreamsWithChannelInfo(page, size);
         return ResponseEntity.ok(response);
     }
       // Increment stream viewers
@@ -70,7 +72,7 @@ public class StreamController {
     // Get stream by ID with channel information
     @GetMapping("/{streamId}")
     public ResponseEntity<StreamWithChannelDto> getStreamById(@PathVariable String streamId) {
-        return streamService.getStreamWithChannelById(streamId)
+        return streamQueryService.getStreamWithChannelById(streamId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
