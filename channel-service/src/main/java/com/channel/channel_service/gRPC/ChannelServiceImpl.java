@@ -21,11 +21,15 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
+
+//A stub is a client-side proxy that makes gRPC calls to a remote service look like local method calls.
+
 @GrpcService
 public class ChannelServiceImpl extends ChannelServiceGrpc.ChannelServiceImplBase {
 
     @Autowired
     private ChannelService channelService;
+
 
     @Override
     public void getChannelPreviewsByIds(ChannelIdList request, StreamObserver<ChannelPreviewList> responseObserver) {
@@ -46,8 +50,10 @@ public class ChannelServiceImpl extends ChannelServiceGrpc.ChannelServiceImplBas
             )
             .build();
 
+        // ReponseObserver is a callback handler that sends the gRPC response back to the client
         responseObserver.onNext(response);
-        responseObserver.onCompleted();    }
+        responseObserver.onCompleted();    
+    }
 
     @Override
     public void getChannelByUserId(UserIdRequest request, StreamObserver<ChannelResponse> responseObserver) {
